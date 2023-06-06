@@ -1,0 +1,37 @@
+{
+    "name": "sequelizewithgraphql",
+    "version": "1.0.0",
+    "description": "",
+    "main": "src/app.ts",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "ts-node-dev --respawn --no-notify src/app.ts",
+        "format": "npx prettier --write .",
+        "lint:check": "npx eslint .",
+        "lint:fix": "npx eslint --fix ."
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@apollo/server": "^4.7.1",
+        "@types/dotenv": "^8.2.0",
+        "@typescript-eslint/eslint-plugin": "^5.59.9",
+        "@typescript-eslint/parser": "^5.59.9",
+        "dotenv": "^16.1.4",
+        "graphql": "^15.7.2",
+        "lodash": "^4.17.21",
+        "merge-graphql-schemas": "^1.7.8",
+        "mysql2": "^3.3.3",
+        "sequelize": "^6.32.0",
+        "ts-node-dev": "^2.0.0"
+    },
+    "devDependencies": {
+        "@types/lodash": "^4.14.195",
+        "eslint": "^8.42.0",
+        "eslint-config-prettier": "^8.8.0",
+        "prettier": "^2.8.8",
+        "sequelize-cli": "^6.6.1",
+        "typescript": "^5.1.3"
+    }
+}
