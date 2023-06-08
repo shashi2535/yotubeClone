@@ -3,21 +3,21 @@ const userSchema = `#graphql
     title: String
     author: String
   }
-input signupInput {
-  name:String
- email:String
-}
 type User{
  id:ID
  name:String
  email:String
 }
+type Response{
+  message:String
+  data:User
+}
 type Query {
     books: String
     userData:[User]
   }
-type Mutation{
-  createUser( name:String, email:String):User
-}
+  type Mutation{
+    createUser(name:String, email:String):Response!
+  }
 `;
 export { userSchema };

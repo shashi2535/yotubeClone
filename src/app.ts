@@ -2,8 +2,7 @@ import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import express from 'express';
-import { resolvers } from './resolver';
-import { typeDefs } from './schema';
+import { resolvers, typedefs } from './graphql';
 import { connection } from './config/';
 import cors from 'cors';
 import http from 'http';
@@ -11,7 +10,7 @@ const app = express();
 const httpServer = http.createServer(app);
 const expressServer = async () => {
     const server = new ApolloServer({
-        typeDefs,
+        typeDefs: typedefs,
         resolvers,
         plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
     });

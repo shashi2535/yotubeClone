@@ -15,7 +15,7 @@ const sequelizeConnection = new Sequelize(dbName, dbUser, dbPassword, {
 
 const connection = async () => {
     await sequelizeConnection
-        .authenticate()
+        .authenticate({ logging: false })
         .then(() => {
             console.log('database connected successfully');
         })
