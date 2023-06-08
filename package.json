@@ -8,7 +8,8 @@
         "start": "ts-node-dev --respawn --no-notify src/app.ts",
         "format": "npx prettier --write .",
         "lint:check": "npx eslint .",
-        "prepare": "husky install"
+        "prepare": "husky install",
+        "pre-commit": "lint-staged"
     },
     "keywords": [],
     "author": "",
@@ -37,6 +38,7 @@
         "eslint": "^8.42.0",
         "eslint-config-prettier": "^8.8.0",
         "husky": "^8.0.0",
+        "lint-staged": "^13.2.2",
         "prettier": "^2.8.8",
         "sequelize-cli": "^6.6.1",
         "typescript": "^5.1.3"
