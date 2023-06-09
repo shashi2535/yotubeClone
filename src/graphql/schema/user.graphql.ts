@@ -17,7 +17,7 @@ type Query {
     userData:[User]
   }
   type Mutation{
-    createUser(name:String, email:String):Response!
+    createUser(name:String, email:String @constraint(minLength: 5, format: "email") ):Response!
   }
 `;
 export { userSchema };
