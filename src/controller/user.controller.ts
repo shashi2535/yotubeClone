@@ -61,6 +61,11 @@ const userResolverController = {
                 message: 'Please Signup.',
             };
         }
+        if (userData.dataValues.is_blocked === true) {
+            return {
+                message: 'Your Account Is Blocked Try After One Hour.',
+            };
+        }
         if (userData.dataValues.is_phone_varified === true) {
             return {
                 message: 'Already Verified Please Login.',
@@ -74,11 +79,23 @@ const userResolverController = {
             };
         }
         if (Number(otp) !== Number(userData.dataValues.otp)) {
-            console.log('>>>>');
             const count = userData.dataValues.attempt;
-            // if (!count) {
-            // }
-            console.log({ count });
+            if (count === 3) {
+                await User.update(
+                    { is_blocked: true },
+                    { where: { id: userData.dataValues.id } }
+                );
+                return {
+                    message: 'Your Account Will Be Blocked For One Hour.',
+                };
+            }
+            await User.update(
+                { attempt: Number(count) + 1 },
+                { where: { id: userData.dataValues.id } }
+            );
+            return {
+                message: 'Wrong Otp.',
+            };
         }
 
         if (Number(otp) === Number(userData.dataValues.otp)) {
