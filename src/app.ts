@@ -1,4 +1,6 @@
 import { ApolloServer } from 'apollo-server-express';
+import jwt from 'jsonwebtoken';
+import { User } from './models';
 import {
     createApolloQueryValidationPlugin,
     constraintDirectiveTypeDefs,
@@ -23,10 +25,29 @@ const expressServer = async () => {
     const server = new ApolloServer({
         schema,
         plugins,
-        context: async ({ req }) => ({ token: req.headers.token }),
+        context: async ({ req }) => {
+            const token: any = req?.headers?.token;
+            if (token) {
+                if (token?.startsWith('Bearer')) {
+                    const tokenWithOutBearer = token.split('.')[1];
+                    const payload = await jwt.verify(
+                        tokenWithOutBearer,
+                        'secret'
+                    );
+                    return {
+                        payload,
+                    };
+                }
+            }
+        },
         formatError: (err: any) => {
             return err.message;
         },
+    });
+    process.stdout.on('error', function (err) {
+        if (err.code == 'EPIPE') {
+            process.exit(0);
+        }
     });
     await server.start();
     server.applyMiddleware({ app });
@@ -34,15 +55,6 @@ const expressServer = async () => {
     await new Promise<void>((resolve) =>
         httpServer.listen({ port: 9000 }, resolve)
     );
-    process.stdout.on('error', function (err) {
-        if (err.code == 'EPIPE') {
-            process.exit(0);
-        }
-        process.on('uncaughtException', (err) => {
-            console.error(err, 'Uncaught Exception thrown');
-            process.exit(1);
-        });
-    });
     console.log(
         `🚀 Server ready at http://localhost:9000${server.graphqlPath}`
     );
