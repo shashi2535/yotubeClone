@@ -5,9 +5,10 @@ module.exports = {
       return Promise.all([
         queryInterface.addColumn(
           'user',
-          'phone',
+          'token_expiration_time',
           {
-            type: Sequelize.STRING,
+            type: Sequelize.DATE,
+            defaultValue: null,
           },
           { transaction: t }
         ),
@@ -18,7 +19,7 @@ module.exports = {
   down: (queryInterface, Sequelize) => {
     return queryInterface.sequelize.transaction((t) => {
       return Promise.all([
-        queryInterface.removeColumn('user', 'phone', {
+        queryInterface.removeColumn('user', 'token_expiration_time', {
           transaction: t,
         }),
       ]);

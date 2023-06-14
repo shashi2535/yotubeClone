@@ -1,0 +1,4 @@
+tabWidth :- property for gap the staring of line
+semi:- this property will be set the semicolon at the end of the line
+singleQuote:- this property will be set the single quote in the staring
+printWidth:- it will be set the width of the line

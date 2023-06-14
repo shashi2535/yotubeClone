@@ -5,15 +5,25 @@ const userSchema = `#graphql
     author: String
   }
 type User{
- id:ID
+ user_uuid:ID
  name:String
  email:String
+ phone:String
 }
 type signupResponse{
   status_code:Int
   message:String
   data:User
 }
+input verifyEmailByTokenRequest{
+  email: String  @constraint(format: "email")
+  code:String  @constraint(minLength:8)
+}
+
+input resendOtpRequest{
+  user_uuid:String!  @constraint(minLength:36) 
+}
+
 type Query {
     books: String
     userData:[User]
@@ -37,7 +47,8 @@ input signup {
   type Mutation{
     createUser(input:signup):signupResponse!
     verifyOtp(input:verifyOtp):verifyOtpResponse!
+    resendOtp(input:resendOtpRequest): verifyOtpResponse!
+    verifyEmailByToken(input:verifyEmailByTokenRequest):verifyOtpResponse!
   }
 `;
 export { userSchema };
-//
