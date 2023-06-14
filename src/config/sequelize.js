@@ -8,11 +8,11 @@ const dbDriver = process.env.DB_DRIVER;
 const dbPassword = process.env.DB_PASSWORD;
 
 module.exports = {
-    development: {
-        username: dbUser,
-        password: dbPassword,
-        database: dbName,
-        host: dbHost,
-        dialect: dbDriver,
-    },
+  development: {
+    username: dbUser,
+    password: dbPassword,
+    database: dbName,
+    host: dbHost,
+    dialect: dbDriver,
+  },
 };
