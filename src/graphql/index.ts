@@ -1,6 +1,6 @@
-import { userSchema } from './schema/';
-import { userResolver } from './resolver';
+import { userSchema, channelSchema } from './schema/';
+import { userResolver, ChannelResolver } from './resolver';
 import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge';
-const typedef = mergeTypeDefs([userSchema]);
-const resolvers = mergeResolvers([userResolver]);
+const typedef = mergeTypeDefs([userSchema, channelSchema]);
+const resolvers = mergeResolvers([userResolver, ChannelResolver]);
 export { resolvers, typedef };

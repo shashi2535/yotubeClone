@@ -24,6 +24,10 @@ input resendOtpRequest{
   user_uuid:String!  @constraint(minLength:36) 
 }
 
+input resendCodeRequest{
+  user_uuid:String!  @constraint(minLength:36) 
+}
+
 type Query {
     books: String
     userData:[User]
@@ -44,11 +48,22 @@ input signup {
   password:String!  @constraint(minLength:5, maxLength:25)
   phone: String!  @constraint(minLength:10,pattern: "^([7-9]{1})([0-9]{9})$")
 }
-  type Mutation{
+input login{
+   email:String!  @constraint(format: "email")
+  password:String!  @constraint(minLength:5, maxLength:25)
+}
+type loginResponse{
+  token: String!
+  message:String!
+  status_code:Int!
+}
+type Mutation{
     createUser(input:signup):signupResponse!
     verifyOtp(input:verifyOtp):verifyOtpResponse!
     resendOtp(input:resendOtpRequest): verifyOtpResponse!
     verifyEmailByToken(input:verifyEmailByTokenRequest):verifyOtpResponse!
+    resendTokenOnEmail(input:resendCodeRequest):verifyOtpResponse!
+    login(input: login):loginResponse!
   }
 `;
 export { userSchema };

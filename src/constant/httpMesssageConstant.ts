@@ -12,6 +12,13 @@ const HttpMessage = {
   INVALID_ID: 'Invalid Id.',
   USER_NOT_FOUND: 'User Not Found.',
   ACCOUNT_BLOCKED: 'Your Acoount Is Blocked.',
+  CORRECT_TOKEN: 'Wrong Code.',
+  TOKEN_VERIFICATION: 'Your Token IS Verified Successfully.',
+  YOUR_CODE_IS_EXPIRED: 'Your Code Is Expired.',
+  OTP_SEND: 'Otp Is Send On Given No.',
+  CODE_SEND: 'Code Is Send On Given Email.',
+  INVALID_CREDENTIAL: 'Invalid Credentials.',
+  LOGIN_SUCCESSFULLY: 'Login Successfully.',
 };
 
 export { HttpMessage };

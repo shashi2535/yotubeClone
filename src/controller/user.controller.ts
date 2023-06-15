@@ -1,11 +1,12 @@
 import { HttpMessage, HttpStatus } from '../constant';
-import { resendOtpInput, signupInput, verifyOtpInput } from '../interface';
+import { inputVerificationByCode, LoginInput, resendOtpInput, signupInput, verifyOtpInput } from '../interface';
 import { v4 as uuidv4, validate as isValidUUID } from 'uuid';
 import dotenv from 'dotenv';
-import crypto from 'crypto';
+import { sign } from 'jsonwebtoken';
+import { genSalt, hash, compare } from 'bcrypt';
 dotenv.config();
 import { User } from '../models';
-import { AddMinutesToDate, generateOtp, sendMail, SendOtp } from '../utils';
+import { AddMinutesToDate, GenerateCodeForEmail, generateOtp, sendMail, SendOtp } from '../utils';
 import { logger } from '../config';
 
 const userResolverController = {
@@ -23,18 +24,19 @@ const userResolverController = {
           message: HttpMessage.USER_EXIST,
         };
       }
+      const salt = await genSalt(12);
+      const hashPassword = await hash(password, salt);
       const otpExpirationTime = await AddMinutesToDate(15);
-      const randomString = crypto.randomBytes(4).toString('hex');
       const userCreateData = await User.create({
         email,
         first_name,
         last_name,
-        password,
+        password: hashPassword,
         user_uuid: uuidv4(),
         phone,
         otp: generateOtp(),
         otp_expiration_time: otpExpirationTime,
-        reset_token: randomString,
+        reset_token: await GenerateCodeForEmail(),
         token_expiration_time: await AddMinutesToDate(25),
       });
       await SendOtp(phone, userCreateData.otp);
@@ -152,11 +154,10 @@ const userResolverController = {
         message: HttpMessage.ACCOUNT_BLOCKED,
       };
     }
-    const otpExpirationTime = await AddMinutesToDate(15);
     await User.update(
       {
         otp: generateOtp(),
-        otp_expiration_time: otpExpirationTime,
+        otp_expiration_time: await AddMinutesToDate(15),
       },
       { where: { user_uuid } }
     );
@@ -164,11 +165,128 @@ const userResolverController = {
     await SendOtp(`${userUpdatedData?.dataValues.phone}`, userUpdatedData?.dataValues.otp as number);
     return {
       status_code: HttpStatus.OK,
-      message: HttpMessage.OK,
+      message: HttpMessage.OTP_SEND,
     };
   },
-  verifyEmailByToken: async (any: any) => {
-    logger.info('email verification function');
+  verifyEmailByToken: async (any: any, input: inputVerificationByCode) => {
+    try {
+      const { code, email } = input.input;
+      const userData = await User.findOne({ where: { email } });
+      if (!userData?.dataValues) {
+        return {
+          status_code: HttpStatus.BAD_REQUEST,
+          message: HttpMessage.USER_NOT_FOUND,
+        };
+      }
+      if (userData.dataValues.is_email_varified === true) {
+        return {
+          status_code: HttpStatus.OK,
+          message: HttpMessage.ALREADY_VERIFIED,
+        };
+      }
+      const tokenExpirationTime = userData.dataValues?.token_expiration_time?.getTime();
+      if ((tokenExpirationTime as number) < new Date()?.getTime()) {
+        return {
+          status_code: HttpStatus.BAD_REQUEST,
+          message: HttpMessage.YOUR_CODE_IS_EXPIRED,
+        };
+      }
+      if (code.trim() !== userData?.dataValues.reset_token) {
+        return {
+          status_code: HttpStatus.BAD_REQUEST,
+          message: HttpMessage.CORRECT_TOKEN,
+        };
+      }
+      if (code.trim() === userData?.dataValues.reset_token) {
+        await User.update(
+          {
+            is_email_varified: true,
+          },
+          { where: { id: userData.dataValues.id } }
+        );
+        return {
+          status_code: HttpStatus.OK,
+          message: HttpMessage.TOKEN_VERIFICATION,
+        };
+      }
+
+      return {
+        status_code: HttpStatus.OK,
+        message: HttpMessage.OK,
+      };
+    } catch (err: any) {
+      logger.error(JSON.stringify(err));
+    }
+  },
+  resendTokenOnEmail: async (any: any, input: resendOtpInput) => {
+    try {
+      logger.info(`req.body==>  ${JSON.stringify(input).replace('\\', '')}`);
+      const { user_uuid } = input.input;
+      if (!isValidUUID(user_uuid)) {
+        return {
+          status_code: HttpStatus.BAD_REQUEST,
+          message: HttpMessage.INVALID_ID,
+        };
+      }
+      const userData = await User.findOne({ where: { user_uuid } });
+      if (!userData?.dataValues) {
+        return {
+          status_code: HttpStatus.BAD_REQUEST,
+          message: HttpMessage.USER_NOT_FOUND,
+        };
+      }
+      if (userData.dataValues.is_email_varified === true) {
+        return {
+          status_code: HttpStatus.BAD_REQUEST,
+          message: HttpMessage.ALREADY_VERIFIED,
+        };
+      }
+      if (userData.dataValues.is_blocked === true) {
+        return {
+          status_code: HttpStatus.BAD_REQUEST,
+          message: HttpMessage.ACCOUNT_BLOCKED,
+        };
+      }
+      await User.update(
+        {
+          reset_token: await GenerateCodeForEmail(),
+          token_expiration_time: await AddMinutesToDate(25),
+        },
+        { where: { user_uuid } }
+      );
+      const userUpdatedData = await User.findOne({ where: { user_uuid } });
+      await sendMail(userUpdatedData?.dataValues.email as string, userUpdatedData?.dataValues.reset_token as string);
+      return {
+        status_code: HttpStatus.OK,
+        message: HttpMessage.CODE_SEND,
+      };
+    } catch (err) {
+      logger.error(`err >>>>>>>>>  ${JSON.stringify(err)}`);
+    }
+  },
+  login: async (any: any, input: LoginInput) => {
+    const { email, password } = input.input;
+    const userData = await User.findOne({ where: { email } });
+    if (!userData) {
+      return {
+        status_code: HttpStatus.BAD_REQUEST,
+        message: HttpMessage.USER_NOT_FOUND,
+      };
+    }
+    const passwordCompare = await compare(password, userData.dataValues.password as string);
+    if (!passwordCompare) {
+      return {
+        status_code: HttpStatus.BAD_REQUEST,
+        message: HttpMessage.INVALID_CREDENTIAL,
+      };
+    }
+    logger.info(process.env.MY_SECRET);
+    const token = await sign({ id: userData.dataValues.user_uuid }, String(process.env.MY_SECRET), { expiresIn: '1d' });
+    return {
+      status_code: HttpStatus.OK,
+      message: HttpMessage.LOGIN_SUCCESSFULLY,
+      token: token,
+    };
   },
 };
 

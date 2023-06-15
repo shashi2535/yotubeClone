@@ -20,4 +20,18 @@ interface resendOtpInput {
     user_uuid: string;
   };
 }
-export { signupInput, verifyOtpInput, resendOtpInput };
+
+interface LoginInput {
+  input: {
+    email: string;
+    password: string;
+  };
+}
+
+interface inputVerificationByCode {
+  input: {
+    email: string;
+    code: string;
+  };
+}
+export { signupInput, verifyOtpInput, resendOtpInput, inputVerificationByCode, LoginInput };

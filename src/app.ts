@@ -1,11 +1,13 @@
-import { ApolloServer } from 'apollo-server-express';
-import jwt from 'jsonwebtoken';
+import { ApolloServer, ApolloError } from 'apollo-server-express';
+import { JwtPayload, verify, VerifyOptions } from 'jsonwebtoken';
 import { createApolloQueryValidationPlugin, constraintDirectiveTypeDefs } from 'graphql-constraint-directive';
 import express from 'express';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { resolvers, typedef } from './graphql';
 import { connection } from './config/';
 import http from 'http';
+import dotenv from 'dotenv';
+dotenv.config();
 import { logger } from './config';
 const app = express();
 const httpServer = http.createServer(app);
@@ -23,28 +25,30 @@ const expressServer = async () => {
     schema,
     plugins,
     context: async ({ req }) => {
-      const token: any = req?.headers?.token;
-      if (token) {
-        if (token?.startsWith('Bearer')) {
-          const tokenWithOutBearer = token.split('.')[1];
-          const payload = await jwt.verify(tokenWithOutBearer, 'secret');
+      try {
+        const token: any = req?.headers?.token;
+        if (token) {
+          const payload = (await verify(token, String(process.env.MY_SECRET))) as JwtPayload;
           return {
-            payload,
+            userId: payload.id,
           };
         }
+      } catch (err: any) {
+        // console.log(err);
+        throw new ApolloError('UnAuthorized', '400');
       }
     },
     formatError: (err: any) => {
       return err.message;
     },
   });
+  await server.start();
+  server.applyMiddleware({ app });
   process.stdout.on('error', function (err) {
     if (err.code == 'EPIPE') {
       process.exit(0);
     }
   });
-  await server.start();
-  server.applyMiddleware({ app });
   connection();
   await new Promise<void>((resolve) => httpServer.listen({ port: 9000 }, resolve));
   logger.info(`🚀 Server ready at http://localhost:9000${server.graphqlPath}`);

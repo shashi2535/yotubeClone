@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import { logger } from '../config';
 
+import crypto from 'crypto';
 export const generateOtp = () => 100000 + Math.floor(Math.random() * 900000);
 
 export const SendOtp = async (phone: string, otp: number) => {
@@ -43,4 +44,9 @@ export const sendMail = async (email: string, code: string) => {
       logger.info('mail send succesfully.');
     }
   });
+};
+
+export const GenerateCodeForEmail = async () => {
+  const randomString = await crypto.randomBytes(4).toString('hex');
+  return randomString;
 };
