@@ -4,15 +4,15 @@ const logger = createLogger({
   transports: [
     new winston.transports.Console({
       format: combine(
-        colorize({ all: true }),
-        simple(),
         timestamp({
           format: 'YYYY-MM-DD HH:mm:ss',
         }),
+        simple(),
         printf(
           (info) =>
             `${info.timestamp} ${info.level}: ${info.message}` + (info.splat !== undefined ? `${info.splat}` : ' ')
-        )
+        ),
+        colorize({ all: true })
       ),
     }),
   ],
