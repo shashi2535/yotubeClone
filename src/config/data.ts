@@ -19,7 +19,7 @@ const connection = async () => {
   await sequelizeConnection
     .authenticate()
     .then(() => {
-      logger.info('database connected successfully');
+      logger.info('😀 database connected successfully');
     })
     .catch(() => {
       logger.error('database not connected');

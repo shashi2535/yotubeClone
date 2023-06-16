@@ -19,6 +19,7 @@ const HttpMessage = {
   CODE_SEND: 'Code Is Send On Given Email.',
   INVALID_CREDENTIAL: 'Invalid Credentials.',
   LOGIN_SUCCESSFULLY: 'Login Successfully.',
+  TOKEN_REQUIRED: 'Token Is Required.',
 };
 
 export { HttpMessage };

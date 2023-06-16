@@ -1,4 +1,5 @@
 import { logger } from '../config';
+import { HttpMessage } from '../constant';
 import { context } from '../interface/channel';
 
 const channelResolverController = {
@@ -6,10 +7,9 @@ const channelResolverController = {
     if (Object.keys(context).length === 0) {
       return {
         status_code: 400,
-        message: 'Token Is Required.',
+        message: HttpMessage.TOKEN_REQUIRED,
       };
     }
-    // logger.info('create channel function', userID);
     const { userId } = context;
     logger.info(`${userId}`);
   },
