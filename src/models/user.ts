@@ -47,7 +47,7 @@ class User extends Model<UserAttributes, UserInput> implements UserAttributes {
   public readonly updated_at!: Date;
   static associate(models: any) {
     // define association here
-    this.hasOne(models.channel);
+    User.hasMany(models.Channel);
   }
 }
 

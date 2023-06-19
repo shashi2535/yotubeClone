@@ -1,5 +1,13 @@
 interface context {
-  userId: string;
+  userId: number;
+  user_uuid: string;
 }
 
-export { context };
+interface createChannel {
+  input: {
+    channel_name: string;
+    handle: string;
+  };
+}
+
+export { context, createChannel };

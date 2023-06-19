@@ -9,6 +9,7 @@ import http from 'http';
 import dotenv from 'dotenv';
 dotenv.config();
 import { logger } from './config';
+import { User } from './models';
 const app = express();
 const httpServer = http.createServer(app);
 const expressServer = async () => {
@@ -29,8 +30,13 @@ const expressServer = async () => {
         const token: any = req?.headers?.token;
         if (token) {
           const payload = (await verify(token, String(process.env.MY_SECRET))) as JwtPayload;
+          const userData = await User.findOne({ where: { user_uuid: payload.id } });
+          if (!userData?.dataValues) {
+            throw new ApolloError('User Not Found', '400');
+          }
           return {
-            userId: payload.id,
+            userId: userData.dataValues.id,
+            user_uuid: userData.dataValues.user_uuid,
           };
         }
       } catch (err: any) {
@@ -39,7 +45,7 @@ const expressServer = async () => {
       }
     },
     formatError: (err: any) => {
-      return err.message;
+      throw new ApolloError(err.message, '400');
     },
   });
   await server.start();

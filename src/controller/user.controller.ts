@@ -1,16 +1,23 @@
 import { HttpMessage, HttpStatus } from '../constant';
 import { inputVerificationByCode, LoginInput, resendOtpInput, signupInput, verifyOtpInput } from '../interface';
-import { v4 as uuidv4, validate as isValidUUID } from 'uuid';
 import dotenv from 'dotenv';
 import { sign } from 'jsonwebtoken';
 import { genSalt, hash, compare } from 'bcrypt';
 dotenv.config();
 import { User } from '../models';
-import { AddMinutesToDate, GenerateCodeForEmail, generateOtp, sendMail, SendOtp } from '../utils';
+import {
+  AddMinutesToDate,
+  GenerateCodeForEmail,
+  generateOtp,
+  generateUUID,
+  sendMail,
+  SendOtp,
+  validateUUID,
+} from '../utils';
 import { logger } from '../config';
 
 const userResolverController = {
-  createUser: async (any: any, input: signupInput) => {
+  createUser: async (parent: unknown, input: signupInput) => {
     try {
       const { email, first_name, last_name, password, phone } = input.input;
       const userData = await User.findOne({
@@ -32,7 +39,7 @@ const userResolverController = {
         first_name,
         last_name,
         password: hashPassword,
-        user_uuid: uuidv4(),
+        user_uuid: generateUUID(),
         phone,
         otp: generateOtp(),
         otp_expiration_time: otpExpirationTime,
@@ -54,7 +61,7 @@ const userResolverController = {
       };
     }
   },
-  verifyOtp: async (any: any, input: verifyOtpInput) => {
+  verifyOtp: async (parent: unknown, input: verifyOtpInput) => {
     const { otp, phone } = input.input;
     const userData = await User.findOne({
       where: {
@@ -127,9 +134,9 @@ const userResolverController = {
       };
     }
   },
-  resendOtp: async (any: any, input: resendOtpInput) => {
+  resendOtp: async (parent: unknown, input: resendOtpInput) => {
     const { user_uuid } = input.input;
-    if (!isValidUUID(user_uuid)) {
+    if (!validateUUID(user_uuid)) {
       return {
         status_code: HttpStatus.BAD_REQUEST,
         message: HttpMessage.INVALID_ID,
@@ -168,7 +175,7 @@ const userResolverController = {
       message: HttpMessage.OTP_SEND,
     };
   },
-  verifyEmailByToken: async (any: any, input: inputVerificationByCode) => {
+  verifyEmailByToken: async (parent: unknown, input: inputVerificationByCode) => {
     try {
       const { code, email } = input.input;
       const userData = await User.findOne({ where: { email } });
@@ -218,11 +225,11 @@ const userResolverController = {
       logger.error(JSON.stringify(err));
     }
   },
-  resendTokenOnEmail: async (any: any, input: resendOtpInput) => {
+  resendTokenOnEmail: async (parent: unknown, input: resendOtpInput) => {
     try {
       logger.info(`req.body==>  ${JSON.stringify(input).replace('\\', '')}`);
       const { user_uuid } = input.input;
-      if (!isValidUUID(user_uuid)) {
+      if (!validateUUID(user_uuid)) {
         return {
           status_code: HttpStatus.BAD_REQUEST,
           message: HttpMessage.INVALID_ID,
@@ -264,7 +271,7 @@ const userResolverController = {
       logger.error(`err >>>>>>>>>  ${JSON.stringify(err)}`);
     }
   },
-  login: async (any: any, input: LoginInput) => {
+  login: async (any: unknown, input: LoginInput) => {
     const { email, password } = input.input;
     const userData = await User.findOne({ where: { email } });
     if (!userData) {
@@ -280,7 +287,6 @@ const userResolverController = {
         message: HttpMessage.INVALID_CREDENTIAL,
       };
     }
-    logger.info(process.env.MY_SECRET);
     const token = await sign({ id: userData.dataValues.user_uuid }, String(process.env.MY_SECRET), { expiresIn: '1d' });
     return {
       status_code: HttpStatus.OK,

@@ -12,9 +12,9 @@ interface channelAttributes {
   created_at?: Date;
   updated_at?: Date;
 }
-export type UserInput = Optional<channelAttributes, 'id'>;
+export type channelInput = Optional<channelAttributes, 'id'>;
 
-class User extends Model<channelAttributes, UserInput> implements channelAttributes {
+class Channel extends Model<channelAttributes, channelInput> implements channelAttributes {
   public id!: number;
   public chanel_uuid: string;
   public UserId: number;
@@ -27,14 +27,14 @@ class User extends Model<channelAttributes, UserInput> implements channelAttribu
   public readonly updated_at!: Date;
   static associate(models: any) {
     // define association here
-    this.belongsTo(models.user, {
+    Channel.belongsTo(models.User, {
       foreignKey: 'UserId',
       as: 'user',
     });
   }
 }
 
-User.init(
+Channel.init(
   {
     id: {
       type: DataTypes.INTEGER.UNSIGNED,
@@ -43,10 +43,6 @@ User.init(
     },
     UserId: {
       type: DataTypes.INTEGER,
-      references: {
-        model: 'user',
-        key: 'id',
-      },
     },
     chanel_uuid: {
       type: DataTypes.UUID,
@@ -84,4 +80,4 @@ User.init(
   }
 );
 
-export { User };
+export { Channel };

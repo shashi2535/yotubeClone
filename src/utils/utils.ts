@@ -6,6 +6,7 @@ import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 dotenv.config();
 import { logger } from '../config';
+import { v4 as uuidv4, validate as isValidUUID } from 'uuid';
 
 import crypto from 'crypto';
 export const generateOtp = () => 100000 + Math.floor(Math.random() * 900000);
@@ -49,4 +50,14 @@ export const sendMail = async (email: string, code: string) => {
 export const GenerateCodeForEmail = async () => {
   const randomString = await crypto.randomBytes(4).toString('hex');
   return randomString;
+};
+
+export const generateUUID = () => uuidv4();
+
+export const validateUUID = (uuid: string) => {
+  if (!isValidUUID(uuid)) {
+    return false;
+  } else {
+    return true;
+  }
 };
