@@ -1,5 +1,6 @@
 import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
 import { sequelizeConnection } from '../config';
+import { Channel } from './channel';
 
 interface UserAttributes {
   id: number;
@@ -45,10 +46,6 @@ class User extends Model<UserAttributes, UserInput> implements UserAttributes {
   // timestamps!
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
-  static associate(models: any) {
-    // define association here
-    User.hasMany(models.Channel);
-  }
 }
 
 User.init(
@@ -129,5 +126,6 @@ User.init(
     tableName: 'user',
   }
 );
+// User.hasOne(Channel, { foreignKey: 'userId' });
 
 export { User };

@@ -15,8 +15,12 @@ type createChannelResponse{
   status_code:Int!
   data:channel
 }
+type getChannelResponse{
+  message:String!
+  status_code:Int
+}
 type Query{
-  getChanel:String
+  getChanelByUserId:getChannelResponse
 }
 type Mutation{
 createChannel(input:createChannelRequest):createChannelResponse

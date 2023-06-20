@@ -1,5 +1,6 @@
 import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
-import { sequelizeConnection } from '../config';
+import { logger, sequelizeConnection } from '../config';
+import { User } from './user';
 
 interface channelAttributes {
   id: number;
@@ -25,13 +26,6 @@ class Channel extends Model<channelAttributes, channelInput> implements channelA
   // timestamps!
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
-  static associate(models: any) {
-    // define association here
-    Channel.belongsTo(models.User, {
-      foreignKey: 'UserId',
-      as: 'user',
-    });
-  }
 }
 
 Channel.init(
@@ -79,5 +73,9 @@ Channel.init(
     tableName: 'channel',
   }
 );
-
+// Channel.belongsTo(User, { foreignKey: 'UserId' });
+// Channel.belongsTo(User, {
+//   foreignKey: 'UserId',
+//   as: 'user',
+// });
 export { Channel };
