@@ -46,12 +46,7 @@ const channelResolverController = {
 const channelQueryController = {
   getChanelByUserId: async (paranet: unknown, input: any, context: context) => {
     try {
-      if (Object.keys(context).length === 0) {
-        return {
-          status_code: 400,
-          message: HttpMessage.TOKEN_REQUIRED,
-        };
-      }
+      logger.error('in channel query controller');
       const { userId } = context;
       const channelData = await Channel.findAll({
         where: {
@@ -70,6 +65,7 @@ const channelQueryController = {
       return {
         message: 'Get Channel List Successfully.',
         status_code: 200,
+        data: channelData[0].dataValues,
       };
     } catch (err) {
       // console.log(err);
