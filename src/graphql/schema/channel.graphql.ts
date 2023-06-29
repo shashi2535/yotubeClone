@@ -1,16 +1,18 @@
 /* eslint-disable no-useless-escape */
 const channelSchema = `#graphql
-directive @valid on FIELD_DEFINITION
 directive @auth on FIELD_DEFINITION
+directive @avtarValid on FIELD_DEFINITION
+  scalar Upload
+  type fileUploadResponse {
+    message:String
+    status_code:Int
+    url:String
+  }
 type channel{
   handle:String
   chanel_uuid:String
   channel_name:String
   UserId:ID
-}
-input createChannelRequest{
-  channel_name:String!  @constraint(minLength:5)
-  handle:String!  @constraint(minLength:5, maxLength:25)
 }
 type chanelRes{
     chanel_uuid:String
@@ -29,8 +31,8 @@ type User{
   last_name:String
 }
 type createChannelResponse{
-  message:String!
-  status_code:Int!
+  message:String
+  status_code:Int
   data:chanelRes
 }
 type getChannelResponse{
@@ -38,10 +40,10 @@ type getChannelResponse{
   status_code:Int
 }
 type Query{
-  getChanelByUserId:getChannelResponse  @auth @valid
+  getChanelByUserId:getChannelResponse  @auth
 }
 type Mutation{
-createChannel(input:createChannelRequest):createChannelResponse
+createChannel(channel_name:String, handle:String, profile_picture:Upload):createChannelResponse @auth @avtarValid
   }
 `;
 export { channelSchema };

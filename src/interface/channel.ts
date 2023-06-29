@@ -4,10 +4,8 @@ interface context {
 }
 
 interface createChannel {
-  input: {
-    channel_name: string;
-    handle: string;
-  };
+  channel_name: string;
+  handle: string;
 }
 
 export { context, createChannel };

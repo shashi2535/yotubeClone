@@ -1,50 +1,45 @@
 import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
 import { sequelizeConnection } from '../config';
 
-interface channelAttributes {
+interface avtarAttributes {
   id: number;
-  chanel_uuid?: string;
-  UserId?: number;
-  channel_name?: string;
-  handle?: string;
-  discription?: string;
+  image_uuid: string;
+  avtar_url: string;
+  foriegn_id: number;
+  type: string;
   created_at?: Date;
   updated_at?: Date;
 }
-export type channelInput = Optional<channelAttributes, 'id'>;
+export type avtarInput = Optional<avtarAttributes, 'id'>;
 
-class Channel extends Model<channelAttributes, channelInput> implements channelAttributes {
+class Avtar extends Model<avtarAttributes, avtarInput> implements avtarAttributes {
   public id!: number;
-  public chanel_uuid: string;
-  public UserId: number;
-  public channel_name: string;
-  public handle: string;
-  public discription: string;
+  public image_uuid: string;
+  public avtar_url: string;
+  public foriegn_id: number;
+  public type: string;
   // timestamps!
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
 }
 
-Channel.init(
+Avtar.init(
   {
     id: {
       type: DataTypes.INTEGER.UNSIGNED,
       autoIncrement: true,
       primaryKey: true,
     },
-    UserId: {
-      type: DataTypes.INTEGER,
-    },
-    chanel_uuid: {
+    image_uuid: {
       type: DataTypes.UUID,
     },
-    channel_name: {
+    avtar_url: {
       type: DataTypes.STRING,
     },
-    handle: {
-      type: DataTypes.STRING,
+    foriegn_id: {
+      type: DataTypes.INTEGER,
     },
-    discription: {
+    type: {
       type: DataTypes.STRING,
     },
     created_at: {
@@ -64,12 +59,7 @@ Channel.init(
     timestamps: false,
     sequelize: sequelizeConnection,
     paranoid: true,
-    tableName: 'channel',
+    tableName: 'avtar',
   }
 );
-// Channel.belongsTo(User, { foreignKey: 'UserId' });
-// Channel.belongsTo(User, {
-//   foreignKey: 'UserId',
-//   as: 'user',
-// });
-export { Channel };
+export { Avtar };

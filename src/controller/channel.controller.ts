@@ -1,21 +1,32 @@
 import { logger } from '../config';
 import { HttpMessage } from '../constant';
 import { context, createChannel } from '../interface/channel';
-import { User } from '../models';
-import { Channel } from '../models/channel';
-import { generateUUID } from '../utils';
+import { User, Channel } from '../models';
+import { generateUUID, picUploadInCloudinary } from '../utils';
+import { createWriteStream } from 'fs';
+import { join } from 'path';
+import { tmpdir } from 'os';
 
+const storeUpload = async ({ stream, filename, mimetype }: any) => {
+  const id = Date.now();
+  const path = `${join(tmpdir())}/${id}${filename.replace(/ /g, '')}`;
+  return new Promise((resolve, reject) =>
+    stream
+      .pipe(createWriteStream(path))
+      .on('finish', () => resolve({ path, filename, mimetype }))
+      .on('error', reject)
+  );
+};
+const processUpload = async (upload: any) => {
+  const { createReadStream, filename, mimetype } = await upload;
+  const stream = createReadStream();
+  const file = await storeUpload({ stream, filename, mimetype });
+  return file;
+};
 const channelResolverController = {
   createChannel: async (parent: unknown, input: createChannel, context: context) => {
-    const { channel_name, handle } = input.input;
-    if (Object.keys(context).length === 0) {
-      return {
-        status_code: 400,
-        message: HttpMessage.TOKEN_REQUIRED,
-      };
-    }
+    const { channel_name, handle } = input;
     const { userId, user_uuid } = context;
-
     const channelData = await Channel.findOne({ where: { UserId: userId } });
     logger.info(JSON.stringify(channelData?.dataValues));
     if (channelData?.dataValues) {
@@ -41,6 +52,23 @@ const channelResolverController = {
       },
     };
   },
+  // singleUpload: async (parent: unknown, { file }: any) => {
+  //   try {
+  //     const upload: any = await processUpload(file);
+  //     const data = await picUploadInCloudinary(upload.path);
+  //     return {
+  //       message: 'Ok',
+  //       status_code: 200,
+  //       url: data.url,
+  //     };
+  //   } catch (err) {
+  //     return {
+  //       message: 'Internal Server Error',
+  //       status_code: 500,
+  //     };
+  //   }
+  //   // const { filename, mimetype, encoding } = await file;
+  // },
 };
 
 const channelQueryController = {

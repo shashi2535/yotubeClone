@@ -7,7 +7,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import { logger } from '../config';
 import { v4 as uuidv4, validate as isValidUUID } from 'uuid';
-
+import { v2 as cloudinary } from 'cloudinary';
 import crypto from 'crypto';
 export const generateOtp = () => 100000 + Math.floor(Math.random() * 900000);
 
@@ -60,4 +60,15 @@ export const validateUUID = (uuid: string) => {
   } else {
     return true;
   }
+};
+export const picUploadInCloudinary = async (path: string) => {
+  cloudinary.config({
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.API_KEY,
+    api_secret: process.env.API_SECRET,
+  });
+  const data = await cloudinary.uploader.upload(`${path}`, {
+    folder: 'channelAvtar',
+  });
+  return data;
 };
