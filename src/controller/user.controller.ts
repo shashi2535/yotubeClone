@@ -20,6 +20,7 @@ const userResolverController = {
   createUser: async (parent: unknown, input: signupInput) => {
     try {
       const { email, first_name, last_name, password, phone } = input.input;
+      logger.info('in create user controller');
       const userData = await User.findOne({
         where: {
           email,
@@ -175,6 +176,52 @@ const userResolverController = {
       message: HttpMessage.OTP_SEND,
     };
   },
+  resendTokenOnEmail: async (parent: unknown, input: resendOtpInput) => {
+    try {
+      logger.info(`req.body==>  ${JSON.stringify(input).replace('\\', '')}`);
+      const { user_uuid } = input.input;
+      if (!validateUUID(user_uuid)) {
+        return {
+          status_code: HttpStatus.BAD_REQUEST,
+          message: HttpMessage.INVALID_ID,
+        };
+      }
+      const userData = await User.findOne({ where: { user_uuid } });
+      if (!userData?.dataValues) {
+        return {
+          status_code: HttpStatus.BAD_REQUEST,
+          message: HttpMessage.USER_NOT_FOUND,
+        };
+      }
+      if (userData.dataValues.is_email_varified === true) {
+        return {
+          status_code: HttpStatus.BAD_REQUEST,
+          message: HttpMessage.ALREADY_VERIFIED,
+        };
+      }
+      if (userData.dataValues.is_blocked === true) {
+        return {
+          status_code: HttpStatus.BAD_REQUEST,
+          message: HttpMessage.ACCOUNT_BLOCKED,
+        };
+      }
+      await User.update(
+        {
+          reset_token: await GenerateCodeForEmail(),
+          token_expiration_time: await AddMinutesToDate(25),
+        },
+        { where: { user_uuid } }
+      );
+      const userUpdatedData = await User.findOne({ where: { user_uuid } });
+      await sendMail(userUpdatedData?.dataValues.email as string, userUpdatedData?.dataValues.reset_token as string);
+      return {
+        status_code: HttpStatus.OK,
+        message: HttpMessage.CODE_SEND,
+      };
+    } catch (err) {
+      logger.error(`err >>>>>>>>>  ${JSON.stringify(err)}`);
+    }
+  },
   verifyEmailByToken: async (parent: unknown, input: inputVerificationByCode) => {
     try {
       const { code, email } = input.input;
@@ -225,54 +272,9 @@ const userResolverController = {
       logger.error(JSON.stringify(err));
     }
   },
-  resendTokenOnEmail: async (parent: unknown, input: resendOtpInput) => {
-    try {
-      logger.info(`req.body==>  ${JSON.stringify(input).replace('\\', '')}`);
-      const { user_uuid } = input.input;
-      if (!validateUUID(user_uuid)) {
-        return {
-          status_code: HttpStatus.BAD_REQUEST,
-          message: HttpMessage.INVALID_ID,
-        };
-      }
-      const userData = await User.findOne({ where: { user_uuid } });
-      if (!userData?.dataValues) {
-        return {
-          status_code: HttpStatus.BAD_REQUEST,
-          message: HttpMessage.USER_NOT_FOUND,
-        };
-      }
-      if (userData.dataValues.is_email_varified === true) {
-        return {
-          status_code: HttpStatus.BAD_REQUEST,
-          message: HttpMessage.ALREADY_VERIFIED,
-        };
-      }
-      if (userData.dataValues.is_blocked === true) {
-        return {
-          status_code: HttpStatus.BAD_REQUEST,
-          message: HttpMessage.ACCOUNT_BLOCKED,
-        };
-      }
-      await User.update(
-        {
-          reset_token: await GenerateCodeForEmail(),
-          token_expiration_time: await AddMinutesToDate(25),
-        },
-        { where: { user_uuid } }
-      );
-      const userUpdatedData = await User.findOne({ where: { user_uuid } });
-      await sendMail(userUpdatedData?.dataValues.email as string, userUpdatedData?.dataValues.reset_token as string);
-      return {
-        status_code: HttpStatus.OK,
-        message: HttpMessage.CODE_SEND,
-      };
-    } catch (err) {
-      logger.error(`err >>>>>>>>>  ${JSON.stringify(err)}`);
-    }
-  },
   login: async (any: unknown, input: LoginInput) => {
     const { email, password } = input.input;
+    logger.info('login');
     const userData = await User.findOne({ where: { email } });
     if (!userData) {
       return {

@@ -1,5 +1,11 @@
 /* eslint-disable no-useless-escape */
+
 const userSchema = `#graphql
+directive @loginValid on FIELD_DEFINITION
+directive @signupValid on FIELD_DEFINITION
+directive @verifyEmailValid on FIELD_DEFINITION
+directive @resendCodeOnEmailValid on FIELD_DEFINITION
+directive @verifyOtpValid on FIELD_DEFINITION
   type Book {
     title: String
     author: String
@@ -16,16 +22,16 @@ type signupResponse{
   data:User
 }
 input verifyEmailByTokenRequest{
-  email: String  @constraint(format: "email")
-  code:String  @constraint(minLength:8)
+  email: String 
+  code:String 
 }
 
 input resendOtpRequest{
-  user_uuid:String!  @constraint(minLength:36) 
+  user_uuid:String 
 }
 
 input resendCodeRequest{
-  user_uuid:String!  @constraint(minLength:36) 
+  user_uuid:String
 }
 
 type Query {
@@ -33,24 +39,25 @@ type Query {
     userData:[User]
 }
 input verifyOtp{
-  phone:String!  @constraint(minLength:10,pattern: "^([7-9]{1})([0-9]{9})$")   
-  otp:String!    @constraint(minLength:1, maxLength:6)
+  phone:String 
+  otp:String
 }
+
 type verifyOtpResponse{
   status_code:Int
   message:String
 }
 
 input signup {
-  first_name:String! @constraint( minLength:5, maxLength: 25)
-  last_name:String!  @constraint( minLength:5, maxLength: 25)
-  email:String!  @constraint(format: "email")
-  password:String!  @constraint(minLength:5, maxLength:25)
-  phone: String!  @constraint(minLength:10,pattern: "^([7-9]{1})([0-9]{9})$")
+  first_name:String 
+  last_name:String  
+  email:String  
+  password:String 
+  phone: String
 }
 input login{
-   email:String!  @constraint(format: "email")
-  password:String!  @constraint(minLength:5, maxLength:25)
+   email:String!  
+  password:String! 
 }
 type loginResponse{
   token: String!
@@ -58,12 +65,12 @@ type loginResponse{
   status_code:Int!
 }
 type Mutation{
-    createUser(input:signup):signupResponse!
-    verifyOtp(input:verifyOtp):verifyOtpResponse!
-    resendOtp(input:resendOtpRequest): verifyOtpResponse!
-    verifyEmailByToken(input:verifyEmailByTokenRequest):verifyOtpResponse!
-    resendTokenOnEmail(input:resendCodeRequest):verifyOtpResponse!
-    login(input: login):loginResponse!
+    createUser(input:signup):signupResponse!  @signupValid
+    verifyOtp(input:verifyOtp):verifyOtpResponse! @verifyOtpValid
+    resendOtp(input:resendOtpRequest): verifyOtpResponse! @resendCodeOnEmailValid
+    resendTokenOnEmail(input:resendCodeRequest):verifyOtpResponse! @resendCodeOnEmailValid
+    verifyEmailByToken(input:verifyEmailByTokenRequest):verifyOtpResponse! @verifyEmailValid
+    login(input: login):loginResponse! @loginValid
   }
 `;
 export { userSchema };

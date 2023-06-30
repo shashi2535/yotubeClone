@@ -4,14 +4,22 @@ import { JwtPayload, verify } from 'jsonwebtoken';
 import { createApolloQueryValidationPlugin, constraintDirectiveTypeDefs } from 'graphql-constraint-directive';
 import express from 'express';
 import { makeExecutableSchema } from '@graphql-tools/schema';
-import { resolvers, typedef } from './graphql';
+import {
+  resolvers,
+  typedef,
+  verifyEmailValidateMiddleware,
+  AuthMiddleware,
+  loginValidateMiddleware,
+  signupValidateMiddleware,
+  resendCodeOnEmailValidateMiddleware,
+  verifyOtpValidateMiddleware,
+} from './graphql';
 import { connection } from './config/';
 import http from 'http';
 import dotenv from 'dotenv';
 dotenv.config();
 import { logger } from './config';
 import { User } from './models';
-import { AuthMiddleware, imageValidateMiddleware } from './graphql/';
 import { graphqlUploadExpress } from 'graphql-upload-ts';
 const app = express();
 app.use(express.json());
@@ -22,8 +30,13 @@ const expressServer = async () => {
     resolvers,
   });
   // new midleware is priority first for calling
-  schema = imageValidateMiddleware(schema, 'avtarValid');
+  schema = verifyOtpValidateMiddleware(schema, 'verifyOtpValid');
+  schema = resendCodeOnEmailValidateMiddleware(schema, 'resendCodeOnEmailValid');
+  schema = verifyEmailValidateMiddleware(schema, 'verifyEmailValid');
+  schema = loginValidateMiddleware(schema, 'loginValid');
+  schema = signupValidateMiddleware(schema, 'signupValid');
   schema = AuthMiddleware(schema, 'auth');
+  // plugins
   const plugins = [
     createApolloQueryValidationPlugin({
       schema,
