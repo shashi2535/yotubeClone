@@ -25,51 +25,53 @@ const processUpload = async (upload: any) => {
 };
 const channelResolverController = {
   createChannel: async (parent: unknown, input: createChannel, context: context) => {
-    const { channel_name, handle } = input;
+    const { channel_name, handle, profile_picture } = input;
     const { userId, user_uuid } = context;
     const channelData = await Channel.findOne({ where: { UserId: userId } });
-    logger.info(`create channel controll >>>>>>>>>>> ${JSON.stringify(channelData?.dataValues)}`);
     if (channelData?.dataValues) {
       return {
         message: 'You Can Not Create More Than One Channel.',
         status_code: 400,
       };
     }
-    logger.info('after check');
-    const channelCreateData = await Channel.create({
-      handle,
-      chanel_uuid: generateUUID(),
-      channel_name,
-      UserId: userId,
-    });
-    return {
-      status_code: 200,
-      message: 'Channel Created Successfully.',
-      data: {
-        handle: channelCreateData.handle,
-        chanel_uuid: channelCreateData.chanel_uuid,
-        channel_name: channelCreateData.channel_name,
-        UserId: user_uuid,
-      },
-    };
+    if (channel_name && handle) {
+      const channelCreateData = await Channel.create({
+        handle,
+        chanel_uuid: generateUUID(),
+        channel_name,
+        UserId: userId,
+      });
+      return {
+        status_code: 200,
+        message: 'Channel Created Successfully.',
+        data: {
+          handle: channelCreateData.handle,
+          chanel_uuid: channelCreateData.chanel_uuid,
+          channel_name: channelCreateData.channel_name,
+          UserId: user_uuid,
+        },
+      };
+    } else {
+      const upload: any = await processUpload(profile_picture);
+      const data = await picUploadInCloudinary(upload.path);
+      const channelCreateData = await Channel.create({
+        handle,
+        chanel_uuid: generateUUID(),
+        channel_name,
+        UserId: userId,
+      });
+      return {
+        status_code: 200,
+        message: 'Channel Created Successfully.',
+        data: {
+          handle: channelCreateData.handle,
+          chanel_uuid: channelCreateData.chanel_uuid,
+          channel_name: channelCreateData.channel_name,
+          UserId: user_uuid,
+        },
+      };
+    }
   },
-  // singleUpload: async (parent: unknown, { file }: any) => {
-  //   try {
-  //     const upload: any = await processUpload(file);
-  //     const data = await picUploadInCloudinary(upload.path);
-  //     return {
-  //       message: 'Ok',
-  //       status_code: 200,
-  //       url: data.url,
-  //     };
-  //   } catch (err) {
-  //     return {
-  //       message: 'Internal Server Error',
-  //       status_code: 500,
-  //     };
-  //   }
-  //   // const { filename, mimetype, encoding } = await file;
-  // },
 };
 
 const channelQueryController = {
