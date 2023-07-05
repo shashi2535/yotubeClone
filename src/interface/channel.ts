@@ -4,8 +4,9 @@ interface context {
 }
 
 interface createChannel {
-  channel_name: string;
-  handle: string;
+  channel_name?: string;
+  handle?: string;
+  profile_picture?: any;
 }
 
 export { context, createChannel };

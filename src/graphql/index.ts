@@ -8,6 +8,7 @@ import {
   verifyEmailValidateMiddleware,
   resendCodeOnEmailValidateMiddleware,
   verifyOtpValidateMiddleware,
+  imageValidation,
 } from './directives/';
 const typedef = mergeTypeDefs([userSchema, channelSchema]);
 const resolvers = mergeResolvers([userResolver, ChannelResolver]);
@@ -20,4 +21,5 @@ export {
   verifyEmailValidateMiddleware,
   resendCodeOnEmailValidateMiddleware,
   verifyOtpValidateMiddleware,
+  imageValidation,
 };

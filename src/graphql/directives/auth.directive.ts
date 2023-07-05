@@ -29,10 +29,30 @@ const AuthMiddleware = (schema: GraphQLSchema, directiveName: any) => {
               message: HttpMessage.TOKEN_REQUIRED,
             };
           }
-          const result = await resolve(source, args, context, info);
-          // eslint-disable-next-line no-console
-          console.log('result>>>>>>', result);
-          return result;
+          return await resolve(source, args, context, info);
+        };
+        return fieldConfig;
+      }
+    },
+  });
+};
+const imageValidation = (schema: GraphQLSchema, directiveName: any) => {
+  return mapSchema(schema, {
+    // Executes once for each object field definition in the schema
+    [MapperKind.OBJECT_FIELD]: (fieldConfig: any) => {
+      const deprecatedDirective = getDirective(schema, fieldConfig, directiveName)?.[0];
+      if (deprecatedDirective) {
+        // Get this field's original resolver
+        const { resolve = defaultFieldResolver } = fieldConfig;
+        // Replace the original resolver with a function that *first* calls
+        // the original resolver, then converts its result to upper case
+        fieldConfig.resolve = async function (source: unknown, args: any, context: any, info: unknown) {
+          if (args.profile_picture.file.mimetype !== 'image/png') {
+            return {
+              message: 'Only Image Is Allowed.',
+            };
+          }
+          return await resolve(source, args, context, info);
         };
         return fieldConfig;
       }
@@ -151,4 +171,5 @@ export {
   verifyEmailValidateMiddleware,
   resendCodeOnEmailValidateMiddleware,
   verifyOtpValidateMiddleware,
+  imageValidation,
 };

@@ -28,13 +28,14 @@ const channelResolverController = {
     const { channel_name, handle } = input;
     const { userId, user_uuid } = context;
     const channelData = await Channel.findOne({ where: { UserId: userId } });
-    logger.info(JSON.stringify(channelData?.dataValues));
+    logger.info(`create channel controll >>>>>>>>>>> ${JSON.stringify(channelData?.dataValues)}`);
     if (channelData?.dataValues) {
       return {
         message: 'You Can Not Create More Than One Channel.',
         status_code: 400,
       };
     }
+    logger.info('after check');
     const channelCreateData = await Channel.create({
       handle,
       chanel_uuid: generateUUID(),

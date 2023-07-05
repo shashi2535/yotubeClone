@@ -43,7 +43,7 @@ type Query{
   getChanelByUserId:getChannelResponse  @auth
 }
 type Mutation{
-createChannel(channel_name:String, handle:String, profile_picture:Upload):createChannelResponse @auth @avtarValid
+createChannel(channel_name:String!, handle:String!, profile_picture:Upload):createChannelResponse @auth @avtarValid
   }
 `;
 export { channelSchema };

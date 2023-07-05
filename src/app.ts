@@ -13,6 +13,7 @@ import {
   signupValidateMiddleware,
   resendCodeOnEmailValidateMiddleware,
   verifyOtpValidateMiddleware,
+  imageValidation,
 } from './graphql';
 import { connection } from './config/';
 import http from 'http';
@@ -20,10 +21,12 @@ import dotenv from 'dotenv';
 dotenv.config();
 import { logger } from './config';
 import { User } from './models';
-import { graphqlUploadExpress } from 'graphql-upload-ts';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const graphqlUploadExpress = require('graphql-upload/graphqlUploadExpress.js');
 const app = express();
-app.use(express.json());
 const httpServer = http.createServer(app);
+app.use(express.json());
+
 const expressServer = async () => {
   let schema = makeExecutableSchema({
     typeDefs: [constraintDirectiveTypeDefs, typedef],
@@ -35,6 +38,7 @@ const expressServer = async () => {
   schema = verifyEmailValidateMiddleware(schema, 'verifyEmailValid');
   schema = loginValidateMiddleware(schema, 'loginValid');
   schema = signupValidateMiddleware(schema, 'signupValid');
+  schema = imageValidation(schema, 'avtarValid');
   schema = AuthMiddleware(schema, 'auth');
   // plugins
   const plugins = [
@@ -71,13 +75,7 @@ const expressServer = async () => {
       throw new ApolloError(err.message, '400');
     },
   });
-  app.use(
-    graphqlUploadExpress({
-      maxFileSize: 1000000000,
-      maxFiles: 10,
-    })
-  );
-
+  app.use(graphqlUploadExpress());
   await server.start();
   server.applyMiddleware({ app });
   connection();
