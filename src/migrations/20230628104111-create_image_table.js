@@ -17,14 +17,27 @@ module.exports = {
         type: Sequelize.STRING,
         trim: true,
       },
-      foriegn_id: {
-        type: Sequelize.STRING,
+      user_id: {
+        type: Sequelize.INTEGER,
         trim: true,
+        references: {
+          model: { tableName: 'user' }, // provide table name
+          key: 'id', // PK of the User Model
+        },
+        allowNull: true,
+        onUpdate: 'cascade',
+        onDelete: 'cascade',
       },
-      type: {
-        type: Sequelize.ENUM,
-        values: ['user', 'channel'],
+      channel_id: {
+        type: Sequelize.INTEGER,
         trim: true,
+        references: {
+          model: { tableName: 'channel' }, // provide table name
+          key: 'id', // PK of the User Model
+        },
+        allowNull: true,
+        onUpdate: 'cascade',
+        onDelete: 'cascade',
       },
       created_at: {
         allowNull: false,

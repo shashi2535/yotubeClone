@@ -5,19 +5,19 @@ interface avtarAttributes {
   id: number;
   image_uuid: string;
   avtar_url: string;
-  foriegn_id: number;
-  type: string;
+  user_id?: number | null;
+  channel_id?: number | null;
   created_at?: Date;
   updated_at?: Date;
 }
-export type avtarInput = Optional<avtarAttributes, 'id'>;
+export type avtarInput = Partial<avtarAttributes>;
 
 class Avtar extends Model<avtarAttributes, avtarInput> implements avtarAttributes {
   public id!: number;
   public image_uuid: string;
   public avtar_url: string;
-  public foriegn_id: number;
-  public type: string;
+  public user_id?: number | null;
+  public channel_id?: number | null;
   // timestamps!
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
@@ -36,11 +36,11 @@ Avtar.init(
     avtar_url: {
       type: DataTypes.STRING,
     },
-    foriegn_id: {
+    user_id: {
       type: DataTypes.INTEGER,
     },
-    type: {
-      type: DataTypes.STRING,
+    channel_id: {
+      type: DataTypes.INTEGER,
     },
     created_at: {
       type: DataTypes.DATE,

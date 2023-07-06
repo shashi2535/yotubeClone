@@ -23,7 +23,6 @@ export const AddMinutesToDate = async (minutes: number) => {
   const date = new Date();
   return new Date(date.getTime() + minutes * 60000);
 };
-
 export const sendMail = async (email: string, code: string) => {
   const mailTransporter = nodemailer.createTransport({
     service: process.env.SERVICE,
@@ -46,14 +45,11 @@ export const sendMail = async (email: string, code: string) => {
     }
   });
 };
-
 export const GenerateCodeForEmail = async () => {
   const randomString = await crypto.randomBytes(4).toString('hex');
   return randomString;
 };
-
 export const generateUUID = () => uuidv4();
-
 export const validateUUID = (uuid: string) => {
   if (!isValidUUID(uuid)) {
     return false;

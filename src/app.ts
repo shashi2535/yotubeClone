@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ApolloServer, ApolloError } from 'apollo-server-express';
-import { JwtPayload, verify } from 'jsonwebtoken';
+import { JsonWebTokenError, JwtPayload, verify } from 'jsonwebtoken';
 import { createApolloQueryValidationPlugin, constraintDirectiveTypeDefs } from 'graphql-constraint-directive';
 import express from 'express';
 import { makeExecutableSchema } from '@graphql-tools/schema';
@@ -21,6 +21,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import { logger } from './config';
 import { User } from './models';
+import { GraphQLError } from 'graphql';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const graphqlUploadExpress = require('graphql-upload/graphqlUploadExpress.js');
 const app = express();
@@ -50,29 +51,36 @@ const expressServer = async () => {
     schema,
     plugins,
     context: async ({ req }: any) => {
-      // try {
-      // if (req.rawHeaders[15].includes('application/json') === false) {
-      const token: any = req?.headers?.token;
-      if (token) {
-        const payload = (await verify(token, String(process.env.MY_SECRET))) as JwtPayload;
-        const userData = await User.findOne({ where: { user_uuid: payload.id } });
-        if (!userData?.dataValues) {
-          throw new ApolloError('User Not Found', '400');
+      try {
+        // if (req.rawHeaders[15].includes('application/json') === false) {
+        const token: any = req?.headers?.token;
+        if (token) {
+          const payload = (await verify(token, String(process.env.MY_SECRET))) as JwtPayload;
+          const userData = await User.findOne({ where: { user_uuid: payload.id } });
+          if (!userData?.dataValues) {
+            throw new ApolloError('User Not Found', '400');
+          }
+          return {
+            userId: userData.dataValues.id,
+            user_uuid: userData.dataValues.user_uuid,
+          };
         }
-        return {
-          userId: userData.dataValues.id,
-          user_uuid: userData.dataValues.user_uuid,
-        };
+      } catch (err: unknown) {
+        logger.error(JSON.stringify(err));
+        if (err instanceof JsonWebTokenError) {
+          if (err.message == 'jwt malformed') {
+            throw new ApolloError('UnAuthorized');
+          }
+          if (err.name == 'TokenExpiredError') {
+            throw new ApolloError(err.message);
+          }
+        }
       }
-      // }
-      // } catch (err: any) {
-      //   if (err.message == 'jwt malformed') {
-      //     throw new ApolloError('UnAuthorized', '400');
-      //   }
-      // }
     },
-    formatError: (err: any) => {
-      throw new ApolloError(err.message, '400');
+    formatError: (err: unknown): any => {
+      if (err instanceof GraphQLError) {
+        return new ApolloError(err.message, '400');
+      }
     },
   });
   app.use(graphqlUploadExpress());

@@ -14,6 +14,13 @@ type channel{
   channel_name:String
   UserId:ID
 }
+type User{
+  email:String
+  phone:String
+  user_uuid:ID
+  first_name:String
+  last_name:String
+}
 type chanelRes{
     chanel_uuid:String
     channel_name:String
@@ -21,14 +28,7 @@ type chanelRes{
     discription:String
     created_at:String
     updated_at:String
-    User: User
-}
-type User{
-  email:String
-  phone:String
-  user_uuid:ID
-  first_name:String
-  last_name:String
+    url:String
 }
 type createChannelResponse{
   message:String

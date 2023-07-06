@@ -2,7 +2,7 @@ import { channelResolverController, channelQueryController } from '../../control
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const GraphQLUpload = require('graphql-upload/GraphQLUpload.js');
 export const ChannelResolver = {
-  // Upload: GraphQLUpload,
+  Upload: GraphQLUpload,
   Query: {
     ...channelQueryController,
   },

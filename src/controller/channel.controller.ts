@@ -1,7 +1,7 @@
 import { logger } from '../config';
 import { HttpMessage } from '../constant';
 import { context, createChannel } from '../interface/channel';
-import { User, Channel } from '../models';
+import { User, Channel, Avtar } from '../models';
 import { generateUUID, picUploadInCloudinary } from '../utils';
 import { createWriteStream } from 'fs';
 import { join } from 'path';
@@ -25,51 +25,75 @@ const processUpload = async (upload: any) => {
 };
 const channelResolverController = {
   createChannel: async (parent: unknown, input: createChannel, context: context) => {
-    const { channel_name, handle, profile_picture } = input;
-    const { userId, user_uuid } = context;
-    const channelData = await Channel.findOne({ where: { UserId: userId } });
-    if (channelData?.dataValues) {
-      return {
-        message: 'You Can Not Create More Than One Channel.',
-        status_code: 400,
-      };
-    }
-    if (channel_name && handle) {
-      const channelCreateData = await Channel.create({
-        handle,
-        chanel_uuid: generateUUID(),
-        channel_name,
-        UserId: userId,
-      });
-      return {
-        status_code: 200,
-        message: 'Channel Created Successfully.',
-        data: {
-          handle: channelCreateData.handle,
-          chanel_uuid: channelCreateData.chanel_uuid,
-          channel_name: channelCreateData.channel_name,
-          UserId: user_uuid,
-        },
-      };
-    } else {
-      const upload: any = await processUpload(profile_picture);
-      const data = await picUploadInCloudinary(upload.path);
-      const channelCreateData = await Channel.create({
-        handle,
-        chanel_uuid: generateUUID(),
-        channel_name,
-        UserId: userId,
-      });
-      return {
-        status_code: 200,
-        message: 'Channel Created Successfully.',
-        data: {
-          handle: channelCreateData.handle,
-          chanel_uuid: channelCreateData.chanel_uuid,
-          channel_name: channelCreateData.channel_name,
-          UserId: user_uuid,
-        },
-      };
+    try {
+      const { channel_name, handle, profile_picture } = input;
+      const { userId, user_uuid } = context;
+      const channelData = await Channel.findOne({ where: { UserId: userId } });
+      // if (channelData?.dataValues) {
+      //   return {
+      //     message: 'You Can Not Create More Than One Channel.',
+      //     status_code: 400,
+      //   };
+      // }
+      logger.info(JSON.stringify(input));
+      if (channel_name && handle && !profile_picture) {
+        logger.info('only body');
+        const channelCreateData = await Channel.create({
+          handle,
+          chanel_uuid: generateUUID(),
+          channel_name,
+          UserId: userId,
+        });
+        return {
+          status_code: 200,
+          message: 'Channel Created Successfully.',
+          data: {
+            data: {
+              handle: channelCreateData.handle,
+              chanel_uuid: channelCreateData.chanel_uuid,
+              channel_name: channelCreateData.channel_name,
+              UserId: user_uuid,
+              created_at: channelCreateData.dataValues.created_at,
+              updated_at: channelCreateData.dataValues.updated_at,
+            },
+          },
+        };
+      } else {
+        logger.info('both body and file');
+        const upload: any = await processUpload(profile_picture);
+        const data = await picUploadInCloudinary(upload.path);
+        const channelCreateData = await Channel.create({
+          handle,
+          chanel_uuid: generateUUID(),
+          channel_name,
+          UserId: userId,
+        });
+        const avtarData = await Avtar.create({
+          avtar_url: String(data.url),
+          image_uuid: generateUUID(),
+          channel_id: Number(channelCreateData.id),
+        });
+        return {
+          status_code: 200,
+          message: 'Channel Created Successfully.',
+          data: {
+            handle: channelCreateData.handle,
+            chanel_uuid: channelCreateData.chanel_uuid,
+            channel_name: channelCreateData.channel_name,
+            UserId: user_uuid,
+            url: avtarData.dataValues.avtar_url,
+            created_at: channelCreateData.dataValues.created_at,
+            updated_at: channelCreateData.dataValues.updated_at,
+          },
+        };
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          message: err.message,
+          status_code: 500,
+        };
+      }
     }
   },
 };

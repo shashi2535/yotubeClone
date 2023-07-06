@@ -47,10 +47,13 @@ const imageValidation = (schema: GraphQLSchema, directiveName: any) => {
         // Replace the original resolver with a function that *first* calls
         // the original resolver, then converts its result to upper case
         fieldConfig.resolve = async function (source: unknown, args: any, context: any, info: unknown) {
-          if (args.profile_picture.file.mimetype !== 'image/png') {
-            return {
-              message: 'Only Image Is Allowed.',
-            };
+          const file = await args?.profile_picture;
+          if (file) {
+            if (file.mimetype !== 'image/png') {
+              return {
+                message: 'Only Image Is Allowed.',
+              };
+            }
           }
           return await resolve(source, args, context, info);
         };
