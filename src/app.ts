@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ApolloServer, ApolloError } from 'apollo-server-express';
 import { JsonWebTokenError, JwtPayload, verify } from 'jsonwebtoken';
-import { createApolloQueryValidationPlugin, constraintDirectiveTypeDefs } from 'graphql-constraint-directive';
 import express from 'express';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import {
@@ -22,6 +21,9 @@ dotenv.config();
 import { logger } from './config';
 import { User } from './models';
 import { GraphQLError } from 'graphql';
+import { WebSocketServer } from 'ws';
+import { useServer } from 'graphql-ws/lib/use/ws';
+import { ApolloServerPluginDrainHttpServer, ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const graphqlUploadExpress = require('graphql-upload/graphqlUploadExpress.js');
 const app = express();
@@ -30,7 +32,7 @@ app.use(express.json());
 
 const expressServer = async () => {
   let schema = makeExecutableSchema({
-    typeDefs: [constraintDirectiveTypeDefs, typedef],
+    typeDefs: typedef,
     resolvers,
   });
   // new midleware is priority first for calling
@@ -41,15 +43,19 @@ const expressServer = async () => {
   schema = signupValidateMiddleware(schema, 'signupValid');
   schema = imageValidation(schema, 'avtarValid');
   schema = AuthMiddleware(schema, 'auth');
-  // plugins
-  const plugins = [
-    createApolloQueryValidationPlugin({
-      schema,
-    }),
-  ];
+
+  // Creating the WebSocket server
+  const wsServer = new WebSocketServer({
+    server: httpServer,
+    path: '/graphql',
+  });
+
+  // Hand in the schema we just created and have the
+  // WebSocketServer start listening.
+  const serverCleanup = useServer({ schema }, wsServer);
+
   const server = new ApolloServer({
     schema,
-    plugins,
     context: async ({ req }: any) => {
       try {
         // if (req.rawHeaders[15].includes('application/json') === false) {
@@ -82,6 +88,24 @@ const expressServer = async () => {
         return new ApolloError(err.message, '400');
       }
     },
+    csrfPrevention: true,
+    cache: 'bounded',
+    plugins: [
+      // Proper shutdown for the HTTP server.
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+
+      // Proper shutdown for the WebSocket server.
+      {
+        async serverWillStart() {
+          return {
+            async drainServer() {
+              await serverCleanup.dispose();
+            },
+          };
+        },
+      },
+      ApolloServerPluginLandingPageLocalDefault({ embed: true }),
+    ],
   });
   app.use(graphqlUploadExpress());
   await server.start();
