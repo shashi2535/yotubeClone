@@ -45,5 +45,9 @@ type Query{
 type Mutation{
 createChannel(channel_name:String!, handle:String!, profile_picture:Upload):createChannelResponse @auth @avtarValid
   }
+type Subscription{
+createEvent:Boolean
+}
+
 `;
 export { channelSchema };

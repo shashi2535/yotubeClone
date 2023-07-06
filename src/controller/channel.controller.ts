@@ -1,4 +1,4 @@
-import { logger } from '../config';
+import { logger, pubsub } from '../config';
 import { HttpMessage } from '../constant';
 import { context, createChannel } from '../interface/channel';
 import { User, Channel, Avtar } from '../models';
@@ -29,12 +29,12 @@ const channelResolverController = {
       const { channel_name, handle, profile_picture } = input;
       const { userId, user_uuid } = context;
       const channelData = await Channel.findOne({ where: { UserId: userId } });
-      // if (channelData?.dataValues) {
-      //   return {
-      //     message: 'You Can Not Create More Than One Channel.',
-      //     status_code: 400,
-      //   };
-      // }
+      if (channelData?.dataValues) {
+        return {
+          message: 'You Can Not Create More Than One Channel.',
+          status_code: 400,
+        };
+      }
       logger.info(JSON.stringify(input));
       if (channel_name && handle && !profile_picture) {
         logger.info('only body');
@@ -116,6 +116,7 @@ const channelQueryController = {
         ],
         attributes: { exclude: ['id', 'UserId'] },
       });
+
       logger.info(JSON.stringify(channelData));
       return {
         message: 'Get Channel List Successfully.',

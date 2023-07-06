@@ -14,7 +14,7 @@ import {
   SendOtp,
   validateUUID,
 } from '../utils';
-import { logger } from '../config';
+import { logger, pubsub } from '../config';
 
 const userResolverController = {
   createUser: async (parent: unknown, input: signupInput) => {
@@ -300,6 +300,7 @@ const userResolverController = {
 
 const userQueryController = {
   books: async () => {
+    pubsub.publish('COMMENT_ADDED', { data: '2' });
     return 'hello ';
   },
   userData: () => {
