@@ -88,7 +88,7 @@ const expressServer = async () => {
         return new ApolloError(err.message, '400');
       }
     },
-    csrfPrevention: true,
+    csrfPrevention: false,
     cache: 'bounded',
     plugins: [
       // Proper shutdown for the HTTP server.
