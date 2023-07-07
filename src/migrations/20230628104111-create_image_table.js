@@ -17,6 +17,10 @@ module.exports = {
         type: Sequelize.STRING,
         trim: true,
       },
+      public_id: {
+        type: Sequelize.STRING,
+        trim: true,
+      },
       user_id: {
         type: Sequelize.INTEGER,
         trim: true,

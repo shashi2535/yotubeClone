@@ -1,5 +1,5 @@
 import { logger, pubsub } from '../config';
-import { HttpMessage } from '../constant';
+import { HttpMessage, HttpStatus } from '../constant';
 import { context, createChannel } from '../interface/channel';
 import { User, Channel, Avtar } from '../models';
 import { generateUUID, picUploadInCloudinary } from '../utils';
@@ -72,6 +72,7 @@ const channelResolverController = {
           avtar_url: String(data.url),
           image_uuid: generateUUID(),
           channel_id: Number(channelCreateData.id),
+          public_id: data.public_id,
         });
         return {
           status_code: 200,
@@ -91,7 +92,7 @@ const channelResolverController = {
       if (err instanceof Error) {
         return {
           message: err.message,
-          status_code: 500,
+          status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         };
       }
     }
@@ -101,7 +102,7 @@ const channelResolverController = {
 const channelQueryController = {
   getChanelByUserId: async (paranet: unknown, input: any, context: context) => {
     try {
-      logger.error('in channel query controller');
+      logger.info('in channel query controller');
       const { userId } = context;
       const channelData = await Channel.findAll({
         where: {
@@ -113,6 +114,11 @@ const channelQueryController = {
             attributes: ['email', 'phone', 'user_uuid', 'first_name', 'last_name'],
             required: false,
           },
+          {
+            model: Avtar,
+            required: false,
+            attributes: ['avtar_url', 'image_uuid', 'public_id'],
+          },
         ],
         attributes: { exclude: ['id', 'UserId'] },
       });
@@ -123,10 +129,14 @@ const channelQueryController = {
         status_code: 200,
         data: channelData[0].dataValues,
       };
-    } catch (err) {
-      // console.log(err);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          message: err.message,
+          status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        };
+      }
     }
-    // console.log(channelData);
   },
 };
 

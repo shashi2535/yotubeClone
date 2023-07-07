@@ -36,7 +36,6 @@ input resendCodeRequest{
 
 type Query {
     books: String
-    userData:[User]
 }
 input verifyOtp{
   phone:String 

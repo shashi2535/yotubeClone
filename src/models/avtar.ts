@@ -6,6 +6,7 @@ interface avtarAttributes {
   image_uuid: string;
   avtar_url: string;
   user_id?: number | null;
+  public_id?: string | undefined;
   channel_id?: number | null;
   created_at?: Date;
   updated_at?: Date;
@@ -17,6 +18,7 @@ class Avtar extends Model<avtarAttributes, avtarInput> implements avtarAttribute
   public image_uuid: string;
   public avtar_url: string;
   public user_id?: number | null;
+  public public_id?: string | undefined;
   public channel_id?: number | null;
   // timestamps!
   public readonly created_at!: Date;
@@ -34,6 +36,9 @@ Avtar.init(
       type: DataTypes.UUID,
     },
     avtar_url: {
+      type: DataTypes.STRING,
+    },
+    public_id: {
       type: DataTypes.STRING,
     },
     user_id: {
