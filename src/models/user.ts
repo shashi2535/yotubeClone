@@ -2,6 +2,7 @@ import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
 import { sequelizeConnection } from '../config';
 import { IUserAttributes } from '../interface';
 import { Avtar } from './avtar';
+import { Channel } from './channel';
 
 export type UserInput = Optional<IUserAttributes, 'id'>;
 
@@ -106,7 +107,8 @@ User.init(
     modelName: 'User',
   }
 );
-Avtar.belongsTo(User, { targetKey: 'id', foreignKey: 'user_id' });
-User.hasOne(Avtar);
-
+User.hasOne(Avtar, { foreignKey: 'user_id' });
+User.hasOne(Channel, { foreignKey: 'UserId' });
+Avtar.belongsTo(User, { foreignKey: 'user_id', as: 'User' });
+Channel.belongsTo(User), { foreignKey: 'UserId', as: 'User' };
 export { User };

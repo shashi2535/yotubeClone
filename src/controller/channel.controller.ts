@@ -1,6 +1,6 @@
 import { logger, pubsub } from '../config';
 import { HttpMessage, HttpStatus } from '../constant';
-import { context, createChannel, IchannelAttributes } from '../interface/channel';
+import { Icontext, IcreateChannel, IchannelAttributes, IdeleteChannel } from '../interface/channel';
 import { User, Channel, Avtar } from '../models';
 import { generateUUID, picUpdatedInCloudinary, picUploadInCloudinary } from '../utils';
 import { createWriteStream } from 'fs';
@@ -24,10 +24,10 @@ const processUpload = async (upload: any) => {
   return file;
 };
 const channelResolverController = {
-  createChannel: async (parent: unknown, input: createChannel, context: context) => {
+  IcreateChannel: async (parent: unknown, input: IcreateChannel, Icontext: Icontext) => {
     try {
       const { channel_name, handle, profile_picture } = input;
-      const { userId, user_uuid } = context;
+      const { userId, user_uuid } = Icontext;
       const channelData = await Channel.findOne({ where: { UserId: userId } });
       if (channelData) {
         return {
@@ -97,10 +97,10 @@ const channelResolverController = {
       }
     }
   },
-  updateChannel: async (paraent: unknown, input: createChannel, context: context) => {
+  updateChannel: async (paraent: unknown, input: IcreateChannel, Icontext: Icontext) => {
     try {
       const { channel_name, handle, profile_picture } = input;
-      const { userId, user_uuid } = context;
+      const { userId, user_uuid } = Icontext;
 
       const channelData: IchannelAttributes = await Channel.findOne({
         where: { UserId: userId },
@@ -126,11 +126,13 @@ const channelResolverController = {
             },
           }
         );
-        const updatedChanelData = await Channel.findOne({
+        const updatedChanelData: IchannelAttributes = (await Channel.findOne({
           where: {
             UserId: userId,
           },
-        });
+          include: [{ model: Avtar, attributes: ['avtar_url'], as: 'Avtar' }],
+        })) as any;
+
         return {
           status_code: 200,
           message: 'Channel Updated Successfully.',
@@ -141,6 +143,7 @@ const channelResolverController = {
             UserId: user_uuid,
             created_at: updatedChanelData?.created_at,
             updated_at: updatedChanelData?.updated_at,
+            url: updatedChanelData?.Avtar?.avtar_url,
           },
         };
       } else if (profile_picture && !channel_name && !handle) {
@@ -156,11 +159,13 @@ const channelResolverController = {
             },
           }
         );
-        const updatedChanelData = await Channel.findOne({
+        const updatedChanelData: IchannelAttributes = (await Channel.findOne({
           where: {
             UserId: userId,
           },
-        });
+          include: [{ model: Avtar, attributes: ['avtar_url'], as: 'Avtar' }],
+        })) as any;
+
         return {
           status_code: 200,
           message: 'Channel Updated Successfully.',
@@ -171,6 +176,7 @@ const channelResolverController = {
             UserId: user_uuid,
             created_at: updatedChanelData?.created_at,
             updated_at: updatedChanelData?.updated_at,
+            url: updatedChanelData?.Avtar?.avtar_url,
           },
         };
       } else {
@@ -220,14 +226,39 @@ const channelResolverController = {
       }
     }
   },
+  deleteChannel: async (paraent: unknown, input: IdeleteChannel, context: Icontext) => {
+    const { userId, user_uuid } = context;
+    logger.info(`in delete channel ${userId}`);
+    const channelData = await Channel.findOne({ where: { UserId: userId }, raw: true, nest: true });
+    if (!channelData) {
+      return {
+        message: 'Channel Not Found.',
+        status_code: 400,
+      };
+    }
+    await Channel.destroy({ where: { UserId: userId } });
+    await Avtar.destroy({ where: { channel_id: channelData.id } });
+    return {
+      status_code: 200,
+      message: 'Channel Deleted Successfully.',
+      data: {
+        handle: channelData?.handle,
+        chanel_uuid: channelData?.chanel_uuid,
+        channel_name: channelData?.channel_name,
+        UserId: user_uuid,
+        created_at: channelData?.created_at,
+        updated_at: channelData?.updated_at,
+      },
+    };
+  },
 };
 
 const channelQueryController = {
-  getChanelByUserId: async (paranet: unknown, input: any, context: context) => {
+  getChanelByUserId: async (paranet: unknown, input: any, context: Icontext) => {
     try {
       logger.info('in channel query controller');
-      const { userId } = context;
-      const channelData = await Channel.findAll({
+      const { userId, user_uuid } = context;
+      const channelData: [IchannelAttributes] = (await Channel.findAll({
         where: {
           UserId: userId,
         },
@@ -236,21 +267,29 @@ const channelQueryController = {
             model: User,
             attributes: ['email', 'phone', 'user_uuid', 'first_name', 'last_name'],
             required: false,
+            as: 'User',
           },
           {
             model: Avtar,
             required: false,
             attributes: ['avtar_url', 'image_uuid', 'public_id'],
+            as: 'Avtar',
           },
         ],
         attributes: { exclude: ['id', 'UserId'] },
-      });
-
-      logger.info(JSON.stringify(channelData));
+        raw: true,
+        nest: true,
+      })) as any;
+      if (!channelData[0]) {
+        return {
+          message: 'Channel Not Found.',
+          status_code: 400,
+        };
+      }
       return {
         message: 'Get Channel List Successfully.',
         status_code: 200,
-        data: channelData[0],
+        data: channelData,
       };
     } catch (err: unknown) {
       if (err instanceof Error) {

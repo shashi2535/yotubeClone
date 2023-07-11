@@ -1,11 +1,11 @@
 import { IAvtarAttributes } from './avtar';
 
-interface context {
+interface Icontext {
   userId: number;
   user_uuid: string;
 }
 
-interface createChannel {
+interface IcreateChannel {
   channel_name?: string;
   handle?: string;
   profile_picture?: any;
@@ -21,5 +21,7 @@ interface IchannelAttributes {
   updated_at?: Date;
   Avtar?: IAvtarAttributes;
 }
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface IdeleteChannel {}
 
-export { context, createChannel, IchannelAttributes };
+export { Icontext, IcreateChannel, IchannelAttributes, IdeleteChannel };

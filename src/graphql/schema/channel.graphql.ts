@@ -35,16 +35,18 @@ type createChannelResponse{
   status_code:Int
   data:chanelRes
 }
-type getChannelResponse{
-  message:String!
+type getCheannelResponse {
+   message:String
   status_code:Int
+  data: [createChannelResponse]
 }
 type Query{
-  getChanelByUserId:getChannelResponse  @auth
+  getChanelByUserId:getCheannelResponse  @auth
 }
 type Mutation{
-createChannel(channel_name:String!, handle:String!, profile_picture:Upload):createChannelResponse @auth @avtarValid
+IcreateChannel(channel_name:String!, handle:String!, profile_picture:Upload):createChannelResponse @auth @avtarValid
 updateChannel(channel_name:String, handle:String, profile_picture:Upload):createChannelResponse @auth @avtarValid
+deleteChannel:createChannelResponse @auth
   }
 type Subscription{
 createEvent:Boolean

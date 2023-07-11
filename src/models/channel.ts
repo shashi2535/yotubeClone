@@ -6,7 +6,7 @@ import { User } from './user';
 
 export type channelInput = Optional<IchannelAttributes, 'id'>;
 
-class Channel extends Model {
+class Channel extends Model<IchannelAttributes, channelInput> implements IchannelAttributes {
   public id!: number;
   public chanel_uuid: string;
   public UserId: number;
@@ -62,8 +62,7 @@ Channel.init(
   }
 );
 Channel.hasOne(Avtar, { foreignKey: 'channel_id', as: 'Avtar' });
-Channel.belongsTo(User);
 Avtar.belongsTo(Channel, { foreignKey: 'channel_id' });
-Avtar.belongsTo(User);
+// Avtar.belongsTo(User);
 
 export { Channel };
