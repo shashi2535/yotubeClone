@@ -17,9 +17,7 @@ export const ChannelResolver = {
       subscribe: withFilter(
         () => pubsub.asyncIterator('COMMENT_ADDED'),
         (payload, variables) => {
-          // Only push an update if the comment is on
-          // the correct repository for this operation
-          console.log(payload);
+          logger.info(`>>>>${JSON.stringify(payload)}`);
           return true;
         }
       ),

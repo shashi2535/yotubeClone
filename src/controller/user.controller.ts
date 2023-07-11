@@ -1,5 +1,5 @@
 import { HttpMessage, HttpStatus } from '../constant';
-import { inputVerificationByCode, LoginInput, resendOtpInput, signupInput, verifyOtpInput } from '../interface';
+import { IinputVerificationByCode, IloginInput, IresendOtpInput, IsignupInput, IverifyOtpInput } from '../interface';
 import dotenv from 'dotenv';
 import { sign } from 'jsonwebtoken';
 import { genSalt, hash, compare } from 'bcrypt';
@@ -17,7 +17,7 @@ import {
 import { logger, pubsub } from '../config';
 
 const userResolverController = {
-  createUser: async (parent: unknown, input: signupInput) => {
+  createUser: async (parent: unknown, input: IsignupInput) => {
     try {
       const { email, first_name, last_name, password, phone } = input.input;
       logger.info('in create user controller');
@@ -63,7 +63,7 @@ const userResolverController = {
       }
     }
   },
-  verifyOtp: async (parent: unknown, input: verifyOtpInput) => {
+  verifyOtp: async (parent: unknown, input: IverifyOtpInput) => {
     try {
       const { otp, phone } = input.input;
       const userData = await User.findOne({
@@ -145,7 +145,7 @@ const userResolverController = {
       }
     }
   },
-  resendOtp: async (parent: unknown, input: resendOtpInput) => {
+  resendOtp: async (parent: unknown, input: IresendOtpInput) => {
     try {
       const { user_uuid } = input.input;
       if (!validateUUID(user_uuid)) {
@@ -195,7 +195,7 @@ const userResolverController = {
       }
     }
   },
-  resendTokenOnEmail: async (parent: unknown, input: resendOtpInput) => {
+  resendTokenOnEmail: async (parent: unknown, input: IresendOtpInput) => {
     try {
       logger.info(`req.body==>  ${JSON.stringify(input).replace('\\', '')}`);
       const { user_uuid } = input.input;
@@ -246,7 +246,7 @@ const userResolverController = {
       }
     }
   },
-  verifyEmailByToken: async (parent: unknown, input: inputVerificationByCode) => {
+  verifyEmailByToken: async (parent: unknown, input: IinputVerificationByCode) => {
     try {
       const { code, email } = input.input;
       const userData = await User.findOne({ where: { email } });
@@ -301,7 +301,7 @@ const userResolverController = {
       }
     }
   },
-  login: async (any: unknown, input: LoginInput) => {
+  login: async (any: unknown, input: IloginInput) => {
     try {
       const { email, password } = input.input;
       logger.info('login');

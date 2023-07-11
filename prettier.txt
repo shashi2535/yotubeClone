@@ -14,7 +14,13 @@ npx sequelize-cli model:generate --name User --attributes firstName:string,lastN
 * for update existing table ==>
 npx sequelize-cli model:generate --name User
 
-
-
-
-
+!try-catch block in ts 
+try{
+}catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          message: err.message,
+          status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        };
+      }
+    }

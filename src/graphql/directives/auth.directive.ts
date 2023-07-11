@@ -9,7 +9,7 @@ import {
   resendCodeOnEmailRule,
   verifyOtpRule,
 } from '../../validation';
-import { LoginInput, signupInput, inputVerificationByCode, verifyOtpInput } from '../../interface';
+import { IloginInput, IsignupInput, IinputVerificationByCode, IverifyOtpInput } from '../../interface';
 
 const AuthMiddleware = (schema: GraphQLSchema, directiveName: any) => {
   return mapSchema(schema, {
@@ -48,6 +48,7 @@ const imageValidation = (schema: GraphQLSchema, directiveName: any) => {
         // the original resolver, then converts its result to upper case
         fieldConfig.resolve = async function (source: unknown, args: any, context: any, info: unknown) {
           const file = await args?.profile_picture;
+          // logger.info('image validation', JSON.stringify(file));
           if (file) {
             if (file.mimetype !== 'image/png') {
               return {
@@ -71,7 +72,7 @@ const loginValidateMiddleware = (schema: GraphQLSchema, directiveName: any) => {
       if (deprecatedDirective) {
         // Get this field's original resolver
         const { resolve = defaultFieldResolver } = fieldConfig;
-        fieldConfig.resolve = async function (source: unknown, args: LoginInput, context: any, info: unknown) {
+        fieldConfig.resolve = async function (source: unknown, args: IloginInput, context: any, info: unknown) {
           logger.info(`input in login validation>>> ${JSON.stringify(args)}`);
           await UserLoginRules.validate(args.input, { abortEarly: false });
           const result = await resolve(source, args, context, info);
@@ -91,7 +92,7 @@ const signupValidateMiddleware = (schema: GraphQLSchema, directiveName: any) => 
       if (deprecatedDirective) {
         // Get this field's original resolver
         const { resolve = defaultFieldResolver } = fieldConfig;
-        fieldConfig.resolve = async function (source: unknown, args: signupInput, context: any, info: unknown) {
+        fieldConfig.resolve = async function (source: unknown, args: IsignupInput, context: any, info: unknown) {
           logger.info(`input in signup validation>>> ${JSON.stringify(args)}`);
           const { email, password, first_name, last_name, phone } = args.input;
           await UserRegisterationRules.validate(args.input);
@@ -113,7 +114,7 @@ const verifyEmailValidateMiddleware = (schema: GraphQLSchema, directiveName: any
         const { resolve = defaultFieldResolver } = fieldConfig;
         fieldConfig.resolve = async function (
           source: unknown,
-          args: inputVerificationByCode,
+          args: IinputVerificationByCode,
           context: any,
           info: unknown
         ) {
@@ -155,7 +156,7 @@ const verifyOtpValidateMiddleware = (schema: GraphQLSchema, directiveName: any) 
       if (deprecatedDirective) {
         // Get this field's original resolver
         const { resolve = defaultFieldResolver } = fieldConfig;
-        fieldConfig.resolve = async function (source: unknown, args: verifyOtpInput, context: any, info: unknown) {
+        fieldConfig.resolve = async function (source: unknown, args: IverifyOtpInput, context: any, info: unknown) {
           logger.info(`input in resendCodeOnEmail validation>>> ${JSON.stringify(args)}`);
           await verifyOtpRule.validate(args.input);
           const result = await resolve(source, args, context, info);

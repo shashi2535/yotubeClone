@@ -1,8 +1,8 @@
 import { logger, pubsub } from '../config';
 import { HttpMessage, HttpStatus } from '../constant';
-import { context, createChannel } from '../interface/channel';
+import { context, createChannel, IchannelAttributes } from '../interface/channel';
 import { User, Channel, Avtar } from '../models';
-import { generateUUID, picUploadInCloudinary } from '../utils';
+import { generateUUID, picUpdatedInCloudinary, picUploadInCloudinary } from '../utils';
 import { createWriteStream } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
@@ -29,7 +29,7 @@ const channelResolverController = {
       const { channel_name, handle, profile_picture } = input;
       const { userId, user_uuid } = context;
       const channelData = await Channel.findOne({ where: { UserId: userId } });
-      if (channelData?.dataValues) {
+      if (channelData) {
         return {
           message: 'You Can Not Create More Than One Channel.',
           status_code: 400,
@@ -53,8 +53,8 @@ const channelResolverController = {
               chanel_uuid: channelCreateData.chanel_uuid,
               channel_name: channelCreateData.channel_name,
               UserId: user_uuid,
-              created_at: channelCreateData.dataValues.created_at,
-              updated_at: channelCreateData.dataValues.updated_at,
+              created_at: channelCreateData.created_at,
+              updated_at: channelCreateData.updated_at,
             },
           },
         };
@@ -82,9 +82,132 @@ const channelResolverController = {
             chanel_uuid: channelCreateData.chanel_uuid,
             channel_name: channelCreateData.channel_name,
             UserId: user_uuid,
-            url: avtarData.dataValues.avtar_url,
-            created_at: channelCreateData.dataValues.created_at,
-            updated_at: channelCreateData.dataValues.updated_at,
+            url: avtarData.avtar_url,
+            created_at: channelCreateData.created_at,
+            updated_at: channelCreateData.updated_at,
+          },
+        };
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          message: err.message,
+          status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        };
+      }
+    }
+  },
+  updateChannel: async (paraent: unknown, input: createChannel, context: context) => {
+    try {
+      const { channel_name, handle, profile_picture } = input;
+      const { userId, user_uuid } = context;
+
+      const channelData: IchannelAttributes = await Channel.findOne({
+        where: { UserId: userId },
+        rejectOnEmpty: true,
+        include: { model: Avtar, attributes: ['public_id'], as: 'Avtar' },
+        raw: true,
+        nest: true,
+      });
+      if (!channelData) {
+        return {
+          message: 'Channel Not Found.',
+          status_code: 400,
+        };
+      }
+      logger.info(JSON.stringify(input));
+      if ((channel_name || handle) && !profile_picture) {
+        logger.info('only body');
+        await Channel.update(
+          { handle, channel_name },
+          {
+            where: {
+              UserId: userId,
+            },
+          }
+        );
+        const updatedChanelData = await Channel.findOne({
+          where: {
+            UserId: userId,
+          },
+        });
+        return {
+          status_code: 200,
+          message: 'Channel Updated Successfully.',
+          data: {
+            handle: updatedChanelData?.handle,
+            chanel_uuid: updatedChanelData?.chanel_uuid,
+            channel_name: updatedChanelData?.channel_name,
+            UserId: user_uuid,
+            created_at: updatedChanelData?.created_at,
+            updated_at: updatedChanelData?.updated_at,
+          },
+        };
+      } else if (profile_picture && !channel_name && !handle) {
+        logger.info('only profile pic');
+
+        const upload: any = await processUpload(profile_picture);
+        const data = await picUpdatedInCloudinary(String(channelData.Avtar?.public_id), upload.path);
+        await Avtar.update(
+          { avtar_url: data.url, public_id: data.public_id },
+          {
+            where: {
+              channel_id: channelData.id,
+            },
+          }
+        );
+        const updatedChanelData = await Channel.findOne({
+          where: {
+            UserId: userId,
+          },
+        });
+        return {
+          status_code: 200,
+          message: 'Channel Updated Successfully.',
+          data: {
+            handle: updatedChanelData?.handle,
+            chanel_uuid: updatedChanelData?.chanel_uuid,
+            channel_name: updatedChanelData?.channel_name,
+            UserId: user_uuid,
+            created_at: updatedChanelData?.created_at,
+            updated_at: updatedChanelData?.updated_at,
+          },
+        };
+      } else {
+        logger.info('both body and file');
+        const upload: any = await processUpload(profile_picture);
+        const data = await picUpdatedInCloudinary(String(channelData.Avtar?.public_id), upload.path);
+        await Avtar.update(
+          { avtar_url: data.url, public_id: data.public_id },
+          {
+            where: {
+              channel_id: channelData.id,
+            },
+          }
+        );
+        await Channel.update(
+          { handle, channel_name },
+          {
+            where: {
+              UserId: userId,
+            },
+          }
+        );
+        const updatedChanelData = await Channel.findOne({
+          where: {
+            UserId: userId,
+          },
+        });
+        return {
+          status_code: 200,
+          message: 'Channel Updated Successfully.',
+          data: {
+            handle: updatedChanelData?.handle,
+            chanel_uuid: updatedChanelData?.chanel_uuid,
+            channel_name: updatedChanelData?.channel_name,
+            UserId: user_uuid,
+            created_at: updatedChanelData?.created_at,
+            updated_at: updatedChanelData?.updated_at,
           },
         };
       }
@@ -127,7 +250,7 @@ const channelQueryController = {
       return {
         message: 'Get Channel List Successfully.',
         status_code: 200,
-        data: channelData[0].dataValues,
+        data: channelData[0],
       };
     } catch (err: unknown) {
       if (err instanceof Error) {

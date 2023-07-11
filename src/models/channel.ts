@@ -1,19 +1,12 @@
 import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
 import { sequelizeConnection } from '../config';
+import { IchannelAttributes } from '../interface/channel';
+import { Avtar } from './avtar';
+import { User } from './user';
 
-interface channelAttributes {
-  id: number;
-  chanel_uuid?: string;
-  UserId?: number;
-  channel_name?: string;
-  handle?: string;
-  discription?: string;
-  created_at?: Date;
-  updated_at?: Date;
-}
-export type channelInput = Optional<channelAttributes, 'id'>;
+export type channelInput = Optional<IchannelAttributes, 'id'>;
 
-class Channel extends Model<channelAttributes, channelInput> implements channelAttributes {
+class Channel extends Model {
   public id!: number;
   public chanel_uuid: string;
   public UserId: number;
@@ -65,11 +58,12 @@ Channel.init(
     sequelize: sequelizeConnection,
     paranoid: true,
     tableName: 'channel',
+    modelName: 'Channel',
   }
 );
-// Channel.belongsTo(User, { foreignKey: 'UserId' });
-// Channel.belongsTo(User, {
-//   foreignKey: 'UserId',
-//   as: 'user',
-// });
+Channel.hasOne(Avtar, { foreignKey: 'channel_id', as: 'Avtar' });
+Channel.belongsTo(User);
+Avtar.belongsTo(Channel, { foreignKey: 'channel_id' });
+Avtar.belongsTo(User);
+
 export { Channel };

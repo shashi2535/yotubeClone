@@ -1,25 +1,17 @@
-import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
+import { DataTypes, ForeignKey, Model, Sequelize } from 'sequelize';
 import { sequelizeConnection } from '../config';
+import { IAvtarAttributes } from '../interface/avtar';
+import { Channel } from './channel';
+export type avtarInput = Partial<IAvtarAttributes>;
 
-interface avtarAttributes {
-  id: number;
-  image_uuid: string;
-  avtar_url: string;
-  user_id?: number | null;
-  public_id?: string | undefined;
-  channel_id?: number | null;
-  created_at?: Date;
-  updated_at?: Date;
-}
-export type avtarInput = Partial<avtarAttributes>;
-
-class Avtar extends Model<avtarAttributes, avtarInput> implements avtarAttributes {
+class Avtar extends Model<IAvtarAttributes, avtarInput> implements IAvtarAttributes {
   public id!: number;
   public image_uuid: string;
   public avtar_url: string;
   public user_id?: number | null;
   public public_id?: string | undefined;
-  public channel_id?: number | null;
+  // public channel_id?: ForeignKey<Channel['id']>;
+  public channel_id: number | null;
   // timestamps!
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
@@ -65,6 +57,7 @@ Avtar.init(
     sequelize: sequelizeConnection,
     paranoid: true,
     tableName: 'avtar',
+    modelName: 'Avtar',
   }
 );
 export { Avtar };

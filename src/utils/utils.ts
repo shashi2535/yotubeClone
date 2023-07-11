@@ -68,3 +68,17 @@ export const picUploadInCloudinary = async (path: string) => {
   });
   return data;
 };
+
+export const picUpdatedInCloudinary = async (public_id: string, path: string) => {
+  cloudinary.config({
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.API_KEY,
+    api_secret: process.env.API_SECRET,
+  });
+  // v2.uploader.destroy(public_id);
+  await cloudinary.uploader.destroy(public_id);
+  const data = await cloudinary.uploader.upload(`${path}`, {
+    folder: 'channelAvtar',
+  });
+  return data;
+};
