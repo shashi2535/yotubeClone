@@ -1,6 +1,6 @@
 import * as yup from 'yup';
 
-const user_uuid = yup.string().required('user_uuid is required.').min(36).max(36);
+// const user_uuid = yup.string().required('user_uuid is required.').min(36).max(36);
 
 const phone = yup
   .string()

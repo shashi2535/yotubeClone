@@ -87,6 +87,7 @@
     "GET_CHANNEL_LIST_SUCCESSFULLY": "चैनल सूची सफलतापूर्वक प्राप्त करें.",
     "YOU_CAN_NOT_SUBSCRIBE_YOUR_OWN_CHANNEL": "आप अपना खुद का चैनल सब्सक्राइब नहीं कर सकते.",
     "ALREADY_SUBSCRIBED": "इस चैनल को पहले ही सब्सक्राइब कर लिया गया है.",
-    "CHANNEL_SUBSCRIBED_SUCCESSFULLY": "चैनल को सब्सक्राइब किया गया."
+    "CHANNEL_SUBSCRIBED_SUCCESSFULLY": "चैनल को सब्सक्राइब किया गया.",
+    "ONLY_IMAGE_ALLOW": "केवल छवि की अनुमति है."
   }
 }

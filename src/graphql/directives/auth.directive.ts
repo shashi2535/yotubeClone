@@ -53,7 +53,8 @@ const imageValidation = (schema: GraphQLSchema, directiveName: any) => {
           if (file) {
             if (file.mimetype !== 'image/png') {
               return {
-                message: 'Only Image Is Allowed.',
+                status_code: HttpStatus.BAD_REQUEST,
+                message: i18next.t('STATUS.ONLY_IMAGE_ALLOW'),
               };
             }
           }
@@ -95,7 +96,6 @@ const signupValidateMiddleware = (schema: GraphQLSchema, directiveName: any) => 
         const { resolve = defaultFieldResolver } = fieldConfig;
         fieldConfig.resolve = async function (source: unknown, args: IsignupInput, Icontext: any, info: unknown) {
           logger.info(`input in signup validation>>> ${JSON.stringify(args)}`);
-          const { email, password, first_name, last_name, phone } = args.input;
           await UserRegisterationRules.validate(args.input);
           const result = await resolve(source, args, Icontext, info);
           return result;
