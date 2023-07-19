@@ -1,34 +1,3 @@
-tabWidth :- property for gap the staring of line
-semi:- this property will be set the semicolon at the end of the line
-singleQuote:- this property will be set the single quote in the staring
-printWidth:- it will be set the width of the line
-
-
-
-for sequelize txt
-!commands ==>
-
-*for create new table ==>
-npx sequelize-cli model:generate --name User --attributes firstName:string,lastName:string,email:string
-
-* for update existing table ==>
-npx sequelize-cli model:generate --name User
-
-!try-catch block in ts 
-try{
-}catch (err: unknown) {
-      if (err instanceof Error) {
-        return {
-          message: err.message,
-          status_code: HttpStatus.INTERNAL_SERVER_ERROR,
-        };
-      }
-    }
-
-
-
-<<<<<<<<<<<<<<<<<<<subscribe>>>>>>>>>>>>
-
 import i18next from 'i18next';
 import { IchannelAttributes, Icontext, IcreateSubscribe } from '../interface';
 import { Channel, Subscribe, User } from '../models';
@@ -88,13 +57,3 @@ const subscribeResolverController = {
 const subscribeSchemaController = {};
 
 export { subscribeResolverController, subscribeSchemaController };
-
-
-
-
-translation
-
-
-
-
-

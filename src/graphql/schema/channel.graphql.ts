@@ -44,7 +44,7 @@ type Query{
   getChanelByUserId:getCheannelResponse  @auth
 }
 type Mutation{
-IcreateChannel(channel_name:String!, handle:String!, profile_picture:Upload):createChannelResponse @auth @avtarValid
+createChannel(channel_name:String!, handle:String!, profile_picture:Upload):createChannelResponse @auth @avtarValid
 updateChannel(channel_name:String, handle:String, profile_picture:Upload):createChannelResponse @auth @avtarValid
 deleteChannel:createChannelResponse @auth
   }

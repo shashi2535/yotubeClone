@@ -3,6 +3,10 @@ import { ApolloServer, ApolloError } from 'apollo-server-express';
 import { JsonWebTokenError, JwtPayload, verify } from 'jsonwebtoken';
 import express from 'express';
 import { makeExecutableSchema } from '@graphql-tools/schema';
+import { handle as i18nextMiddlewareHandle, LanguageDetector } from 'i18next-http-middleware';
+import i18next from 'i18next';
+import i18nextFsBackend from 'i18next-fs-backend';
+import { resolve } from 'path';
 import {
   resolvers,
   typedef,
@@ -28,12 +32,32 @@ import {
   ApolloServerPluginLandingPageLocalDefault,
   AuthenticationError,
 } from 'apollo-server-core';
+import { Locale } from './constant';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const graphqlUploadExpress = require('graphql-upload/graphqlUploadExpress.js');
 const app = express();
 const httpServer = http.createServer(app);
 app.use(express.json());
+i18next
+  .use(LanguageDetector)
+  .use(i18nextFsBackend)
+  .init({
+    ns: ['translation'],
+    defaultNS: 'translation',
+    backend: {
+      loadPath: resolve(__dirname, './locales/{{lng}}/{{ns}}.json'),
+    },
+    debug: false,
+    detection: {
+      order: ['querystring', 'cookie'],
+      caches: ['cookie'],
+    },
+    preload: [Locale.EN, Locale.HI],
+    saveMissing: false,
+    fallbackLng: Locale.EN,
+  });
 
+app.use(i18nextMiddlewareHandle(i18next));
 const expressServer = async () => {
   let schema = makeExecutableSchema({
     typeDefs: typedef,
@@ -64,6 +88,8 @@ const expressServer = async () => {
       try {
         // if (req.rawHeaders[15].includes('application/json') === false) {
         const token: any = req?.headers?.token;
+        const lan = req.rawHeaders[25] === 'hi' ? 'hi' : 'en';
+        i18next.changeLanguage(lan);
         if (token) {
           const payload = (await verify(token, String(process.env.MY_SECRET))) as JwtPayload;
           const userData = await User.findOne({ where: { user_uuid: payload.id }, raw: true, nest: true });

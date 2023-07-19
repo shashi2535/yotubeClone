@@ -1,4 +1,5 @@
 import { IAvtarAttributes } from './avtar';
+import { IUserAttributes } from './user';
 
 interface Icontext {
   userId: number;
@@ -20,6 +21,7 @@ interface IchannelAttributes {
   created_at?: Date;
   updated_at?: Date;
   Avtar?: IAvtarAttributes;
+  User?: IUserAttributes;
 }
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IdeleteChannel {}

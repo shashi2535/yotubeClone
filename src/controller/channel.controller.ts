@@ -24,7 +24,7 @@ const processUpload = async (upload: any) => {
   return file;
 };
 const channelResolverController = {
-  IcreateChannel: async (parent: unknown, input: IcreateChannel, Icontext: Icontext) => {
+  createChannel: async (parent: unknown, input: IcreateChannel, Icontext: Icontext) => {
     try {
       const { channel_name, handle, profile_picture } = input;
       const { userId, user_uuid } = Icontext;

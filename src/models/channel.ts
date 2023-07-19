@@ -1,7 +1,8 @@
 import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
 import { sequelizeConnection } from '../config';
-import { IchannelAttributes } from '../interface/channel';
+import { IchannelAttributes } from '../interface/';
 import { Avtar } from './avtar';
+import { Subscribe } from './subscribe';
 import { User } from './user';
 
 export type channelInput = Optional<IchannelAttributes, 'id'>;
@@ -63,6 +64,9 @@ Channel.init(
 );
 Channel.hasOne(Avtar, { foreignKey: 'channel_id', as: 'Avtar' });
 Avtar.belongsTo(Channel, { foreignKey: 'channel_id' });
+
+Channel.hasOne(Subscribe, { foreignKey: 'subscribed_channel_id', as: 'Subscribe' });
+Subscribe.belongsTo(Channel, { foreignKey: 'subscribed_channel_id' });
 // Avtar.belongsTo(User);
 
 export { Channel };
