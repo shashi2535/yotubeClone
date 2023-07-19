@@ -1,5 +1,5 @@
 import { defaultFieldResolver, GraphQLSchema } from 'graphql';
-import { HttpMessage } from '../../constant';
+import { HttpStatus } from '../../constant';
 import { mapSchema, getDirective, MapperKind } from '@graphql-tools/utils';
 import { logger } from '../../config';
 import {
@@ -10,6 +10,7 @@ import {
   verifyOtpRule,
 } from '../../validation';
 import { IloginInput, IsignupInput, IinputVerificationByCode, IverifyOtpInput } from '../../interface';
+import i18next from 'i18next';
 
 const AuthMiddleware = (schema: GraphQLSchema, directiveName: any) => {
   return mapSchema(schema, {
@@ -25,8 +26,8 @@ const AuthMiddleware = (schema: GraphQLSchema, directiveName: any) => {
           logger.info(`authmidleware >>> ${JSON.stringify(context)}`);
           if (Object.keys(context).length === 0) {
             return {
-              status_code: 400,
-              message: HttpMessage.TOKEN_REQUIRED,
+              status_code: HttpStatus.BAD_REQUEST,
+              message: i18next.t('STATUS.TOKEN_REQUIRED'),
             };
           }
           return await resolve(source, args, context, info);

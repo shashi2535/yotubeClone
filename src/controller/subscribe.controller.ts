@@ -28,14 +28,14 @@ const subscribeResolverController = {
     if (channelData.User?.user_uuid === user_uuid) {
       return {
         status_code: 400,
-        message: 'You Can Not Subscribe Your Own Channel.',
+        message: i18next.t('STATUS.YOU_CAN_NOT_SUBSCRIBE_YOUR_OWN_CHANNEL'),
       };
     }
     const subscribeData = await Subscribe.findOne({ where: { subscribed_user_id: userId } });
     if (subscribeData) {
       return {
         status_code: 400,
-        message: 'Already Subscribed This Channel.',
+        message: i18next.t('STATUS.ALREADY_SUBSCRIBED'),
       };
     }
     const subscribeCreateData = await Subscribe.create({
@@ -45,7 +45,7 @@ const subscribeResolverController = {
     });
     return {
       status_code: 200,
-      message: 'Channel Subscribed Sussessfully.',
+      message: i18next.t('STATUS.CHANNEL_SUBSCRIBED_SUCCESSFULLY'),
       data: {
         subscibe_id: subscribeCreateData.dataValues.subscribe_uuid,
         channel_id: channel_id,

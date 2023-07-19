@@ -1,11 +1,12 @@
 import { logger, pubsub } from '../config';
-import { HttpMessage, HttpStatus } from '../constant';
+import { HttpStatus } from '../constant';
 import { Icontext, IcreateChannel, IchannelAttributes, IdeleteChannel } from '../interface/channel';
 import { User, Channel, Avtar } from '../models';
 import { generateUUID, picUpdatedInCloudinary, picUploadInCloudinary } from '../utils';
 import { createWriteStream } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
+import i18next from 'i18next';
 
 const storeUpload = async ({ stream, filename, mimetype }: any) => {
   const id = Date.now();
@@ -31,8 +32,8 @@ const channelResolverController = {
       const channelData = await Channel.findOne({ where: { UserId: userId } });
       if (channelData) {
         return {
-          message: 'You Can Not Create More Than One Channel.',
-          status_code: 400,
+          message: i18next.t('STATUS.CAN_NOT_CREATE_CHANNEL'),
+          status_code: HttpStatus.BAD_GATEWAY,
         };
       }
       logger.info(JSON.stringify(input));
@@ -45,8 +46,8 @@ const channelResolverController = {
           UserId: userId,
         });
         return {
-          status_code: 200,
-          message: 'Channel Created Successfully.',
+          status_code: HttpStatus.OK,
+          message: i18next.t('STATUS.CHANNEL_CREATED'),
           data: {
             data: {
               handle: channelCreateData.handle,
@@ -75,8 +76,8 @@ const channelResolverController = {
           public_id: data.public_id,
         });
         return {
-          status_code: 200,
-          message: 'Channel Created Successfully.',
+          status_code: HttpStatus.OK,
+          message: i18next.t('STATUS.CHANNEL_CREATED'),
           data: {
             handle: channelCreateData.handle,
             chanel_uuid: channelCreateData.chanel_uuid,
@@ -111,7 +112,7 @@ const channelResolverController = {
       });
       if (!channelData) {
         return {
-          message: 'Channel Not Found.',
+          message: i18next.t('STATUS.CHANNEL_NOT_FOUND'),
           status_code: 400,
         };
       }
@@ -132,10 +133,9 @@ const channelResolverController = {
           },
           include: [{ model: Avtar, attributes: ['avtar_url'], as: 'Avtar' }],
         })) as any;
-
         return {
           status_code: 200,
-          message: 'Channel Updated Successfully.',
+          message: i18next.t('STATUS.CHANNEL_UPDATED_SUCCESSFULLY'),
           data: {
             handle: updatedChanelData?.handle,
             chanel_uuid: updatedChanelData?.chanel_uuid,
@@ -168,7 +168,7 @@ const channelResolverController = {
 
         return {
           status_code: 200,
-          message: 'Channel Updated Successfully.',
+          message: i18next.t('STATUS.CHANNEL_UPDATED_SUCCESSFULLY'),
           data: {
             handle: updatedChanelData?.handle,
             chanel_uuid: updatedChanelData?.chanel_uuid,
@@ -206,7 +206,7 @@ const channelResolverController = {
         });
         return {
           status_code: 200,
-          message: 'Channel Updated Successfully.',
+          message: i18next.t('STATUS.CHANNEL_UPDATED_SUCCESSFULLY'),
           data: {
             handle: updatedChanelData?.handle,
             chanel_uuid: updatedChanelData?.chanel_uuid,
@@ -232,15 +232,15 @@ const channelResolverController = {
     const channelData = await Channel.findOne({ where: { UserId: userId }, raw: true, nest: true });
     if (!channelData) {
       return {
-        message: 'Channel Not Found.',
-        status_code: 400,
+        message: i18next.t('STATUS.CHANNEL_NOT_FOUND'),
+        status_code: HttpStatus.BAD_REQUEST,
       };
     }
     await Channel.destroy({ where: { UserId: userId } });
     await Avtar.destroy({ where: { channel_id: channelData.id } });
     return {
-      status_code: 200,
-      message: 'Channel Deleted Successfully.',
+      status_code: HttpStatus.OK,
+      message: i18next.t('STATUS.CHANNEL_DELETED_SUCCESSFULLY'),
       data: {
         handle: channelData?.handle,
         chanel_uuid: channelData?.chanel_uuid,
@@ -282,13 +282,13 @@ const channelQueryController = {
       })) as any;
       if (!channelData[0]) {
         return {
-          message: 'Channel Not Found.',
-          status_code: 400,
+          message: i18next.t('STATUS.CHANNEL_NOT_FOUND'),
+          status_code: HttpStatus.BAD_REQUEST,
         };
       }
       return {
-        message: 'Get Channel List Successfully.',
-        status_code: 200,
+        message: i18next.t('STATUS.GET_CHANNEL_LIST_SUCCESSFULLY'),
+        status_code: HttpStatus.OK,
         data: channelData,
       };
     } catch (err: unknown) {

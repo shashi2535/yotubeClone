@@ -1,4 +1,4 @@
-import { HttpMessage, HttpStatus } from '../constant';
+import { HttpStatus } from '../constant';
 import { IinputVerificationByCode, IloginInput, IresendOtpInput, IsignupInput, IverifyOtpInput } from '../interface';
 import dotenv from 'dotenv';
 import { sign } from 'jsonwebtoken';
@@ -15,6 +15,7 @@ import {
   validateUUID,
 } from '../utils';
 import { logger, pubsub } from '../config';
+import i18next from 'i18next';
 
 const userResolverController = {
   createUser: async (parent: unknown, input: IsignupInput) => {
@@ -29,9 +30,10 @@ const userResolverController = {
       if (userData) {
         return {
           status_code: HttpStatus.BAD_REQUEST,
-          message: HttpMessage.USER_EXIST,
+          message: i18next.t('STATUS.USER_EXIST'),
         };
       }
+
       const salt = await genSalt(12);
       const hashPassword = await hash(password, salt);
       const otpExpirationTime = await AddMinutesToDate(15);
@@ -51,7 +53,7 @@ const userResolverController = {
       await sendMail(email, userCreateData.reset_token);
       return {
         status_code: HttpStatus.OK,
-        message: HttpMessage.USER_CREATE_SUCCESSFULLY,
+        message: i18next.t('STATUS.USER_CREATE_SUCCESSFULLY'),
         data: userCreateData.dataValues,
       };
     } catch (err: unknown) {
@@ -73,7 +75,8 @@ const userResolverController = {
       });
       if (!userData?.dataValues) {
         return {
-          message: HttpMessage.SIGNUP_PLEASE,
+          status_code: HttpStatus.BAD_REQUEST,
+          message: i18next.t('STATUS.SIGNUP_PLEASE'),
         };
       }
       if (userData.dataValues.is_blocked === true) {
@@ -94,19 +97,23 @@ const userResolverController = {
           const updatedUserData = await User.findOne({ where: { id: userData.dataValues.id } });
           await SendOtp(`${updatedUserData?.dataValues.phone}`, updatedUserData?.dataValues.otp as number);
         }
+
         return {
-          message: HttpMessage.ACCOUNT_BLOCKED_FOR_HALF_HOUR,
+          message: i18next.t('STATUS.ACCOUNT_BLOCKED_FOR_HALF_HOUR'),
+          status_code: HttpStatus.BAD_REQUEST,
         };
       }
       if (userData.dataValues.is_phone_varified === true) {
         return {
-          message: HttpMessage.ALREADY_VERIFIED,
+          message: i18next.t('STATUS.ALREADY_VERIFIED'),
+          status_code: HttpStatus.BAD_REQUEST,
         };
       }
       const otpExpirationTime = userData?.dataValues?.otp_expiration_time?.getTime();
       if ((otpExpirationTime as number) < new Date()?.getTime()) {
         return {
-          message: HttpMessage.OTP_IS_EXPIRED,
+          message: i18next.t('STATUS.OTP_IS_EXPIRED'),
+          status_code: HttpStatus.BAD_REQUEST,
         };
       }
       if (Number(otp) !== Number(userData.dataValues.otp)) {
@@ -121,19 +128,22 @@ const userResolverController = {
             }
           );
           return {
-            message: HttpMessage.ACCOUNT_BLOCKED_FOR_HALF_HOUR,
+            message: i18next.t('STATUS.ACCOUNT_BLOCKED_FOR_HALF_HOUR'),
+            status_code: HttpStatus.BAD_REQUEST,
           };
         }
         await User.update({ attempt: Number(count) + 1 }, { where: { id: userData.dataValues.id } });
         return {
-          message: HttpMessage.WRONG_OTP,
+          message: i18next.t('STATUS.WRONG_OTP'),
+          status_code: HttpStatus.BAD_REQUEST,
         };
       }
 
       if (Number(otp) === Number(userData.dataValues.otp)) {
         await User.update({ is_phone_varified: true }, { where: { id: userData.dataValues.id } });
         return {
-          message: HttpMessage.OTP_VERIFIED_SUCCESSFULLY,
+          message: i18next.t('STATUS.OTP_VERIFIED_SUCCESSFULLY'),
+          status_code: HttpStatus.OK,
         };
       }
     } catch (err: unknown) {
@@ -151,26 +161,26 @@ const userResolverController = {
       if (!validateUUID(user_uuid)) {
         return {
           status_code: HttpStatus.BAD_REQUEST,
-          message: HttpMessage.INVALID_ID,
+          message: i18next.t('STATUS.INVALID_ID'),
         };
       }
       const userData = await User.findOne({ where: { user_uuid } });
       if (!userData?.dataValues) {
         return {
           status_code: HttpStatus.BAD_REQUEST,
-          message: HttpMessage.USER_NOT_FOUND,
+          message: i18next.t('STATUS.USER_NOT_FOUND'),
         };
       }
       if (userData.dataValues.is_phone_varified === true) {
         return {
           status_code: HttpStatus.BAD_REQUEST,
-          message: HttpMessage.ALREADY_VERIFIED,
+          message: i18next.t('STATUS.ALREADY_VERIFIED'),
         };
       }
       if (userData.dataValues.is_blocked === true) {
         return {
           status_code: HttpStatus.BAD_REQUEST,
-          message: HttpMessage.ACCOUNT_BLOCKED,
+          message: i18next.t('STATUS.ACCOUNT_BLOCKED'),
         };
       }
       await User.update(
@@ -184,7 +194,7 @@ const userResolverController = {
       await SendOtp(`${userUpdatedData?.dataValues.phone}`, userUpdatedData?.dataValues.otp as number);
       return {
         status_code: HttpStatus.OK,
-        message: HttpMessage.OTP_SEND,
+        message: i18next.t('STATUS.OTP_SEND'),
       };
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -197,31 +207,30 @@ const userResolverController = {
   },
   resendTokenOnEmail: async (parent: unknown, input: IresendOtpInput) => {
     try {
-      logger.info(`req.body==>  ${JSON.stringify(input).replace('\\', '')}`);
       const { user_uuid } = input.input;
       if (!validateUUID(user_uuid)) {
         return {
           status_code: HttpStatus.BAD_REQUEST,
-          message: HttpMessage.INVALID_ID,
+          message: i18next.t('STATUS.INVALID_ID'),
         };
       }
       const userData = await User.findOne({ where: { user_uuid } });
       if (!userData?.dataValues) {
         return {
           status_code: HttpStatus.BAD_REQUEST,
-          message: HttpMessage.USER_NOT_FOUND,
+          message: i18next.t('STATUS.USER_NOT_FOUND'),
         };
       }
       if (userData.dataValues.is_email_varified === true) {
         return {
           status_code: HttpStatus.BAD_REQUEST,
-          message: HttpMessage.ALREADY_VERIFIED,
+          message: i18next.t('STATUS.ALREADY_VERIFIED'),
         };
       }
       if (userData.dataValues.is_blocked === true) {
         return {
           status_code: HttpStatus.BAD_REQUEST,
-          message: HttpMessage.ACCOUNT_BLOCKED,
+          message: i18next.t('STATUS.ACCOUNT_BLOCKED'),
         };
       }
       await User.update(
@@ -235,7 +244,7 @@ const userResolverController = {
       await sendMail(userUpdatedData?.dataValues.email as string, userUpdatedData?.dataValues.reset_token as string);
       return {
         status_code: HttpStatus.OK,
-        message: HttpMessage.CODE_SEND,
+        message: i18next.t('STATUS.CODE_SEND'),
       };
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -253,26 +262,26 @@ const userResolverController = {
       if (!userData?.dataValues) {
         return {
           status_code: HttpStatus.BAD_REQUEST,
-          message: HttpMessage.USER_NOT_FOUND,
+          message: i18next.t('STATUS.USER_NOT_FOUND'),
         };
       }
       if (userData.dataValues.is_email_varified === true) {
         return {
           status_code: HttpStatus.OK,
-          message: HttpMessage.ALREADY_VERIFIED,
+          message: i18next.t('STATUS.ALREADY_VERIFIED'),
         };
       }
       const tokenExpirationTime = userData.dataValues?.token_expiration_time?.getTime();
       if ((tokenExpirationTime as number) < new Date()?.getTime()) {
         return {
           status_code: HttpStatus.BAD_REQUEST,
-          message: HttpMessage.YOUR_CODE_IS_EXPIRED,
+          message: i18next.t('STATUS.YOUR_CODE_IS_EXPIRED'),
         };
       }
       if (code.trim() !== userData?.dataValues.reset_token) {
         return {
           status_code: HttpStatus.BAD_REQUEST,
-          message: HttpMessage.CORRECT_TOKEN,
+          message: i18next.t('STATUS.CORRECT_TOKEN'),
         };
       }
       if (code.trim() === userData?.dataValues.reset_token) {
@@ -284,13 +293,12 @@ const userResolverController = {
         );
         return {
           status_code: HttpStatus.OK,
-          message: HttpMessage.TOKEN_VERIFICATION,
+          message: i18next.t('STATUS.TOKEN_VERIFICATION'),
         };
       }
-
       return {
         status_code: HttpStatus.OK,
-        message: HttpMessage.OK,
+        message: i18next.t('STATUS.OK'),
       };
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -304,19 +312,18 @@ const userResolverController = {
   login: async (any: unknown, input: IloginInput) => {
     try {
       const { email, password } = input.input;
-      logger.info('login');
       const userData = await User.findOne({ where: { email } });
       if (!userData) {
         return {
           status_code: HttpStatus.BAD_REQUEST,
-          message: HttpMessage.USER_NOT_FOUND,
+          message: i18next.t('STATUS.USER_NOT_FOUND'),
         };
       }
       const passwordCompare = await compare(password, userData.dataValues.password as string);
       if (!passwordCompare) {
         return {
           status_code: HttpStatus.BAD_REQUEST,
-          message: HttpMessage.INVALID_CREDENTIAL,
+          message: i18next.t('STATUS.INVALID_CREDENTIAL'),
         };
       }
       const token = await sign({ id: userData.dataValues.user_uuid }, String(process.env.MY_SECRET), {
@@ -324,7 +331,7 @@ const userResolverController = {
       });
       return {
         status_code: HttpStatus.OK,
-        message: HttpMessage.LOGIN_SUCCESSFULLY,
+        message: i18next.t('STATUS.LOGIN_SUCCESSFULLY'),
         token: token,
       };
     } catch (err: unknown) {

@@ -88,13 +88,13 @@ const expressServer = async () => {
       try {
         // if (req.rawHeaders[15].includes('application/json') === false) {
         const token: any = req?.headers?.token;
-        const lan = req.rawHeaders[25] === 'hi' ? 'hi' : 'en';
+        const lan = req.rawHeaders[25] === Locale.HI ? Locale.HI : Locale.EN;
         i18next.changeLanguage(lan);
         if (token) {
           const payload = (await verify(token, String(process.env.MY_SECRET))) as JwtPayload;
           const userData = await User.findOne({ where: { user_uuid: payload.id }, raw: true, nest: true });
           if (!userData) {
-            throw new AuthenticationError('User Not Found');
+            throw new AuthenticationError(i18next.t('STATUS.USER_NOT_FOUND'));
           }
           return {
             userId: userData.id,
@@ -110,7 +110,7 @@ const expressServer = async () => {
     },
     formatError: (err: unknown): any => {
       if (err instanceof GraphQLError) {
-        return new ApolloError(err.message, '400');
+        return new ApolloError(err.message);
       }
     },
     csrfPrevention: false,
