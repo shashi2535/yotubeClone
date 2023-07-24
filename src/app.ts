@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ApolloServer, ApolloError } from 'apollo-server-express';
-import { JsonWebTokenError, JwtPayload, verify } from 'jsonwebtoken';
 import express from 'express';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { handle as i18nextMiddlewareHandle, LanguageDetector } from 'i18next-http-middleware';
@@ -20,19 +19,14 @@ import {
 } from './graphql';
 import { connection } from './config/';
 import http from 'http';
-import { config } from './config';
 import { logger } from './config';
-import { User } from './models';
 import { GraphQLError } from 'graphql';
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
-import {
-  ApolloServerPluginDrainHttpServer,
-  ApolloServerPluginLandingPageLocalDefault,
-  AuthenticationError,
-} from 'apollo-server-core';
+import { ApolloServerPluginDrainHttpServer, ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core';
 import { Locale } from './constant';
-const { JWT_SECRET } = config.JWT;
+import { verifyJwt } from './middleware';
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const graphqlUploadExpress = require('graphql-upload/graphqlUploadExpress.js');
 const app = express();
@@ -85,27 +79,9 @@ const expressServer = async () => {
   const server = new ApolloServer({
     schema,
     context: async ({ req }: any) => {
-      try {
-        // if (req.rawHeaders[15].includes('application/json') === false) {
-        const token: any = req?.headers?.token;
-        const lan = req.rawHeaders[25] === Locale.HI ? Locale.HI : Locale.EN;
-        i18next.changeLanguage(lan);
-        if (token) {
-          const payload = (await verify(token, JWT_SECRET)) as JwtPayload;
-          const userData = await User.findOne({ where: { user_uuid: payload.id }, raw: true, nest: true });
-          if (!userData) {
-            throw new AuthenticationError(i18next.t('STATUS.USER_NOT_FOUND'));
-          }
-          return {
-            userId: userData.id,
-            user_uuid: userData.user_uuid,
-          };
-        }
-      } catch (err: unknown) {
-        logger.error(JSON.stringify(err));
-        if (err instanceof JsonWebTokenError) {
-          throw new AuthenticationError(err.message);
-        }
+      const data = await verifyJwt(req);
+      if (data) {
+        return data;
       }
     },
     formatError: (err: unknown): any => {
