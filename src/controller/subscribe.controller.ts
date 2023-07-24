@@ -1,5 +1,7 @@
 import i18next from 'i18next';
-import { IchannelAttributes, Icontext, IcreateSubscribe } from '../interface';
+import { logger } from '../config';
+import { HttpStatus } from '../constant';
+import { IchannelAttributes, Icontext, IcreateSubscribe, IRemoveSubscribe } from '../interface';
 import { Channel, Subscribe, User } from '../models';
 import { generateUUID } from '../utils';
 
@@ -53,7 +55,34 @@ const subscribeResolverController = {
       },
     };
   },
+  removeSubscribe: async (parent: unknown, args: IRemoveSubscribe, context: Icontext) => {
+    const { subscribe_id } = args.input;
+    const { userId } = context;
+    const subscribeData = await Subscribe.findOne({
+      where: { subscribe_uuid: subscribe_id, subscribed_user_id: userId },
+      raw: true,
+      nest: true,
+    });
+    if (!subscribeData) {
+      return {
+        message: i18next.t('STATUS.SUBSCRIPTION_NOT_FOUND'),
+        status_code: HttpStatus.BAD_REQUEST,
+      };
+    }
+    await Subscribe.destroy({ where: { subscribe_uuid: subscribe_id } });
+    return {
+      message: i18next.t('STATUS.SUBSCRIPTION_REMOVE_SUCCESSFULLY'),
+      status_code: HttpStatus.OK,
+      data: {
+        subscibe_id: subscribe_id,
+      },
+    };
+  },
 };
-const subscribeSchemaController = {};
+const subscribeSchemaController = {
+  // getSubscribeCount: (parent: unknown, args: IRemoveSubscribe, context: Icontext) => {
+  //   console.log('getSubscribeCount');
+  // },
+};
 
 export { subscribeResolverController, subscribeSchemaController };

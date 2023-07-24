@@ -88,6 +88,8 @@
     "YOU_CAN_NOT_SUBSCRIBE_YOUR_OWN_CHANNEL": "You Can Not Subscribe Your Own Channel.",
     "ALREADY_SUBSCRIBED": "Already Subscribed This Channel.",
     "CHANNEL_SUBSCRIBED_SUCCESSFULLY": "Channel Subscribed Sussessfully.",
-    "ONLY_IMAGE_ALLOW": "Only Image Is Allowed."
+    "ONLY_IMAGE_ALLOW": "Only Image Is Allowed.",
+    "SUBSCRIPTION_NOT_FOUND": "Subscription Not Found.",
+    "SUBSCRIPTION_REMOVE_SUCCESSFULLY": "Subscription Deleted Successfully."
   }
 }

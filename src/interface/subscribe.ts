@@ -12,5 +12,10 @@ interface IcreateSubscribe {
     channel_id: string;
   };
 }
+interface IRemoveSubscribe {
+  input: {
+    subscribe_id: string;
+  };
+}
 
-export { ISubscribeAttributes, IcreateSubscribe };
+export { ISubscribeAttributes, IcreateSubscribe, IRemoveSubscribe };

@@ -16,9 +16,34 @@ directive @auth on FIELD_DEFINITION
     message:String
     data:subscribe
  }
+  type subscribe_id{
+    subscibe_id:String
+ }
+ type subscribeRemoveRes{
+     status_code:Int
+    message:String
+    data: subscribe_id
+ }
+ input removeSubscriptionReq{
+   subscribe_id:String
+ }
+type subscriptionCount{
+   count:Int
+}
+
+ type subscribeGetListResponse{
+     status_code:Int
+    message:String
+    data: subscriptionCount
+ }
 
 type Mutation{
 createSubscribe(input:subscibeReq):subscribeRes @auth 
+removeSubscribe(input:removeSubscriptionReq):subscribeRemoveRes @auth 
   }
+
+# type Query{
+# getSubscribeCount(input:removeSubscriptionReq):subscribeGetListResponse 
+# }  
 `;
 export { subScribeSchema };

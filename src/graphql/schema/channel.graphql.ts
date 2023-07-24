@@ -30,6 +30,16 @@ type chanelRes{
     updated_at:String
     url:String
 }
+type GetChannelRes{
+     chanel_uuid:String
+    channel_name:String
+    handle:String
+    discription:String
+    created_at:String
+    updated_at:String
+    url:String
+    subscriber_count:Int
+}
 type createChannelResponse{
   message:String
   status_code:Int
@@ -38,7 +48,7 @@ type createChannelResponse{
 type getCheannelResponse {
    message:String
   status_code:Int
-  data: [createChannelResponse]
+  data: GetChannelRes
 }
 type Query{
   getChanelByUserId:getCheannelResponse  @auth

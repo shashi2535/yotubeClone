@@ -1,7 +1,7 @@
 import { logger, pubsub } from '../config';
 import { HttpStatus } from '../constant';
 import { Icontext, IcreateChannel, IchannelAttributes, IdeleteChannel } from '../interface/channel';
-import { User, Channel, Avtar } from '../models';
+import { User, Channel, Avtar, Subscribe } from '../models';
 import { generateUUID, picUpdatedInCloudinary, picUploadInCloudinary } from '../utils';
 import { createWriteStream } from 'fs';
 import { join } from 'path';
@@ -254,13 +254,13 @@ const channelResolverController = {
 };
 
 const channelQueryController = {
-  getChanelByUserId: async (paranet: unknown, input: any, context: Icontext) => {
+  getChanelByUserId: async (paranet: unknown, input: null, context: Icontext) => {
     try {
-      logger.info('in channel query controller');
       const { userId, user_uuid } = context;
-      const channelData: [IchannelAttributes] = (await Channel.findAll({
+      const channelData: IchannelAttributes = (await Channel.findOne({
         where: {
           UserId: userId,
+          // chanel_uuid: channel_id,
         },
         include: [
           {
@@ -276,20 +276,30 @@ const channelQueryController = {
             as: 'Avtar',
           },
         ],
-        attributes: { exclude: ['id', 'UserId'] },
+        attributes: { exclude: ['UserId'] },
         raw: true,
         nest: true,
       })) as any;
-      if (!channelData[0]) {
+      if (!channelData) {
         return {
           message: i18next.t('STATUS.CHANNEL_NOT_FOUND'),
           status_code: HttpStatus.BAD_REQUEST,
         };
       }
+      const subscribeCountData = await Subscribe.findAndCountAll({ where: { subscribed_channel_id: channelData.id } });
       return {
         message: i18next.t('STATUS.GET_CHANNEL_LIST_SUCCESSFULLY'),
         status_code: HttpStatus.OK,
-        data: channelData,
+        data: {
+          chanel_uuid: channelData.chanel_uuid,
+          channel_name: channelData.channel_name,
+          handle: channelData.handle,
+          discription: channelData.discription,
+          created_at: channelData.created_at,
+          updated_at: channelData.updated_at,
+          url: channelData.Avtar?.avtar_url,
+          subscriber_count: subscribeCountData.count,
+        },
       };
     } catch (err: unknown) {
       if (err instanceof Error) {

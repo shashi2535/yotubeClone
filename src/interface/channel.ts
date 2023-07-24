@@ -23,6 +23,7 @@ interface IchannelAttributes {
   Avtar?: IAvtarAttributes;
   User?: IUserAttributes;
 }
+
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IdeleteChannel {}
 
