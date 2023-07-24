@@ -20,8 +20,7 @@ import {
 } from './graphql';
 import { connection } from './config/';
 import http from 'http';
-import dotenv from 'dotenv';
-dotenv.config();
+import { config } from './config';
 import { logger } from './config';
 import { User } from './models';
 import { GraphQLError } from 'graphql';
@@ -33,6 +32,7 @@ import {
   AuthenticationError,
 } from 'apollo-server-core';
 import { Locale } from './constant';
+const { JWT_SECRET } = config.JWT;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const graphqlUploadExpress = require('graphql-upload/graphqlUploadExpress.js');
 const app = express();
@@ -91,7 +91,7 @@ const expressServer = async () => {
         const lan = req.rawHeaders[25] === Locale.HI ? Locale.HI : Locale.EN;
         i18next.changeLanguage(lan);
         if (token) {
-          const payload = (await verify(token, String(process.env.MY_SECRET))) as JwtPayload;
+          const payload = (await verify(token, JWT_SECRET)) as JwtPayload;
           const userData = await User.findOne({ where: { user_uuid: payload.id }, raw: true, nest: true });
           if (!userData) {
             throw new AuthenticationError(i18next.t('STATUS.USER_NOT_FOUND'));

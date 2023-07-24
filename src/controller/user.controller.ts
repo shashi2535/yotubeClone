@@ -1,9 +1,8 @@
 import { HttpStatus } from '../constant';
 import { IinputVerificationByCode, IloginInput, IresendOtpInput, IsignupInput, IverifyOtpInput } from '../interface';
-import dotenv from 'dotenv';
 import { sign } from 'jsonwebtoken';
 import { genSalt, hash, compare } from 'bcrypt';
-dotenv.config();
+import { config } from '../config';
 import { User } from '../models';
 import {
   AddMinutesToDate,
@@ -16,6 +15,7 @@ import {
 } from '../utils';
 import { logger, pubsub } from '../config';
 import i18next from 'i18next';
+
 
 const userResolverController = {
   createUser: async (parent: unknown, input: IsignupInput) => {
@@ -312,6 +312,7 @@ const userResolverController = {
   login: async (any: unknown, input: IloginInput) => {
     try {
       const { email, password } = input.input;
+      const { EXPIRES_IN, JWT_SECRET } = config.JWT;
       const userData = await User.findOne({ where: { email } });
       if (!userData) {
         return {
@@ -326,8 +327,8 @@ const userResolverController = {
           message: i18next.t('STATUS.INVALID_CREDENTIAL'),
         };
       }
-      const token = await sign({ id: userData.dataValues.user_uuid }, String(process.env.MY_SECRET), {
-        expiresIn: '1d',
+      const token = await sign({ id: userData.dataValues.user_uuid }, JWT_SECRET, {
+        expiresIn: EXPIRES_IN,
       });
       return {
         status_code: HttpStatus.OK,
