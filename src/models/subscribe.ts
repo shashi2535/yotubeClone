@@ -1,42 +1,33 @@
-import { DataTypes, ForeignKey, Model, Sequelize } from 'sequelize';
+import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
 import { sequelizeConnection } from '../config';
-import { IAvtarAttributes } from '../interface/avtar';
-import { Channel } from './channel';
-export type avtarInput = Partial<IAvtarAttributes>;
+import { ISubscribeAttributes } from '../interface/';
 
-class Avtar extends Model<IAvtarAttributes, avtarInput> implements IAvtarAttributes {
+export type subscribeInput = Optional<ISubscribeAttributes, 'id'>;
+
+class Subscribe extends Model<ISubscribeAttributes, subscribeInput> implements ISubscribeAttributes {
   public id!: number;
-  public image_uuid: string;
-  public avtar_url: string;
-  public user_id?: number | null;
-  public public_id?: string | undefined;
-  // public channel_id?: ForeignKey<Channel['id']>;
-  public channel_id: number | null;
+  public subscribe_uuid: string;
+  public subscribed_channel_id: number;
+  public subscribed_user_id: number;
   // timestamps!
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
 }
 
-Avtar.init(
+Subscribe.init(
   {
     id: {
       type: DataTypes.INTEGER.UNSIGNED,
       autoIncrement: true,
       primaryKey: true,
     },
-    image_uuid: {
+    subscribe_uuid: {
       type: DataTypes.UUID,
     },
-    avtar_url: {
-      type: DataTypes.STRING,
-    },
-    public_id: {
-      type: DataTypes.STRING,
-    },
-    user_id: {
+    subscribed_channel_id: {
       type: DataTypes.INTEGER,
     },
-    channel_id: {
+    subscribed_user_id: {
       type: DataTypes.INTEGER,
     },
     created_at: {
@@ -56,8 +47,12 @@ Avtar.init(
     timestamps: false,
     sequelize: sequelizeConnection,
     paranoid: true,
-    tableName: 'avtar',
-    modelName: 'Avtar',
+    tableName: 'subscribe',
+    modelName: 'Subscribe',
   }
 );
-export { Avtar };
+// Channel.hasOne(Avtar, { foreignKey: 'channel_id', as: 'Avtar' });
+// Avtar.belongsTo(Channel, { foreignKey: 'channel_id' });
+// Avtar.belongsTo(User);
+
+export { Subscribe };

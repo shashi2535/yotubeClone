@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ApolloServer, ApolloError } from 'apollo-server-express';
-import { JsonWebTokenError, JwtPayload, verify } from 'jsonwebtoken';
 import express from 'express';
 import { makeExecutableSchema } from '@graphql-tools/schema';
+import { handle as i18nextMiddlewareHandle, LanguageDetector } from 'i18next-http-middleware';
+import i18next from 'i18next';
+import i18nextFsBackend from 'i18next-fs-backend';
+import { resolve } from 'path';
 import {
   resolvers,
   typedef,
@@ -16,20 +19,39 @@ import {
 } from './graphql';
 import { connection } from './config/';
 import http from 'http';
-import dotenv from 'dotenv';
-dotenv.config();
 import { logger } from './config';
-import { User } from './models';
 import { GraphQLError } from 'graphql';
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { ApolloServerPluginDrainHttpServer, ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core';
+import { Locale } from './constant';
+import { verifyJwt } from './middleware';
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const graphqlUploadExpress = require('graphql-upload/graphqlUploadExpress.js');
 const app = express();
 const httpServer = http.createServer(app);
 app.use(express.json());
+i18next
+  .use(LanguageDetector)
+  .use(i18nextFsBackend)
+  .init({
+    ns: ['translation'],
+    defaultNS: 'translation',
+    backend: {
+      loadPath: resolve(__dirname, './locales/{{lng}}/{{ns}}.json'),
+    },
+    debug: false,
+    detection: {
+      order: ['querystring', 'cookie'],
+      caches: ['cookie'],
+    },
+    preload: [Locale.EN, Locale.HI],
+    saveMissing: false,
+    fallbackLng: Locale.EN,
+  });
 
+app.use(i18nextMiddlewareHandle(i18next));
 const expressServer = async () => {
   let schema = makeExecutableSchema({
     typeDefs: typedef,
@@ -57,38 +79,17 @@ const expressServer = async () => {
   const server = new ApolloServer({
     schema,
     context: async ({ req }: any) => {
-      try {
-        // if (req.rawHeaders[15].includes('application/json') === false) {
-        const token: any = req?.headers?.token;
-        if (token) {
-          const payload = (await verify(token, String(process.env.MY_SECRET))) as JwtPayload;
-          const userData = await User.findOne({ where: { user_uuid: payload.id } });
-          if (!userData?.dataValues) {
-            throw new ApolloError('User Not Found', '400');
-          }
-          return {
-            userId: userData.dataValues.id,
-            user_uuid: userData.dataValues.user_uuid,
-          };
-        }
-      } catch (err: unknown) {
-        logger.error(JSON.stringify(err));
-        if (err instanceof JsonWebTokenError) {
-          if (err.message == 'jwt malformed') {
-            throw new ApolloError('UnAuthorized');
-          }
-          if (err.name == 'TokenExpiredError') {
-            throw new ApolloError(err.message);
-          }
-        }
+      const data = await verifyJwt(req);
+      if (data) {
+        return data;
       }
     },
     formatError: (err: unknown): any => {
       if (err instanceof GraphQLError) {
-        return new ApolloError(err.message, '400');
+        return new ApolloError(err.message);
       }
     },
-    csrfPrevention: true,
+    csrfPrevention: false,
     cache: 'bounded',
     plugins: [
       // Proper shutdown for the HTTP server.

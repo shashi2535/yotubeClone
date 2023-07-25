@@ -1,13 +1,14 @@
 import { Dialect, Sequelize } from 'sequelize';
-import * as dotenv from 'dotenv';
 import { logger } from './logger';
-dotenv.config();
-
-const dbName = process.env.DB_NAME as string;
-const dbUser = process.env.DB_USER as string;
-const dbHost = process.env.DB_HOST;
-const dbDriver = process.env.DB_DRIVER as Dialect;
-const dbPassword = process.env.DB_PASSWORD;
+import { config } from './credential.env';
+const {
+  DB: { DB_DATABASE, DB_DIALECT, DB_HOST, DB_PASSWORD, DB_USERNAME },
+} = config;
+const dbName = DB_DATABASE as string;
+const dbUser = DB_USERNAME as string;
+const dbHost = DB_HOST;
+const dbDriver = DB_DIALECT as Dialect;
+const dbPassword = DB_PASSWORD;
 
 const sequelizeConnection = new Sequelize(dbName, dbUser, dbPassword, {
   host: dbHost,

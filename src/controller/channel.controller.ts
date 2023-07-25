@@ -1,11 +1,12 @@
 import { logger, pubsub } from '../config';
-import { HttpMessage } from '../constant';
-import { context, createChannel } from '../interface/channel';
-import { User, Channel, Avtar } from '../models';
-import { generateUUID, picUploadInCloudinary } from '../utils';
+import { HttpStatus } from '../constant';
+import { Icontext, IcreateChannel, IchannelAttributes, IdeleteChannel } from '../interface/channel';
+import { User, Channel, Avtar, Subscribe } from '../models';
+import { generateUUID, picUpdatedInCloudinary, picUploadInCloudinary } from '../utils';
 import { createWriteStream } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
+import i18next from 'i18next';
 
 const storeUpload = async ({ stream, filename, mimetype }: any) => {
   const id = Date.now();
@@ -24,15 +25,15 @@ const processUpload = async (upload: any) => {
   return file;
 };
 const channelResolverController = {
-  createChannel: async (parent: unknown, input: createChannel, context: context) => {
+  createChannel: async (parent: unknown, input: IcreateChannel, Icontext: Icontext) => {
     try {
       const { channel_name, handle, profile_picture } = input;
-      const { userId, user_uuid } = context;
+      const { userId, user_uuid } = Icontext;
       const channelData = await Channel.findOne({ where: { UserId: userId } });
-      if (channelData?.dataValues) {
+      if (channelData) {
         return {
-          message: 'You Can Not Create More Than One Channel.',
-          status_code: 400,
+          message: i18next.t('STATUS.CAN_NOT_CREATE_CHANNEL'),
+          status_code: HttpStatus.BAD_GATEWAY,
         };
       }
       logger.info(JSON.stringify(input));
@@ -45,16 +46,16 @@ const channelResolverController = {
           UserId: userId,
         });
         return {
-          status_code: 200,
-          message: 'Channel Created Successfully.',
+          status_code: HttpStatus.OK,
+          message: i18next.t('STATUS.CHANNEL_CREATED'),
           data: {
             data: {
               handle: channelCreateData.handle,
               chanel_uuid: channelCreateData.chanel_uuid,
               channel_name: channelCreateData.channel_name,
               UserId: user_uuid,
-              created_at: channelCreateData.dataValues.created_at,
-              updated_at: channelCreateData.dataValues.updated_at,
+              created_at: channelCreateData.created_at,
+              updated_at: channelCreateData.updated_at,
             },
           },
         };
@@ -72,18 +73,19 @@ const channelResolverController = {
           avtar_url: String(data.url),
           image_uuid: generateUUID(),
           channel_id: Number(channelCreateData.id),
+          public_id: data.public_id,
         });
         return {
-          status_code: 200,
-          message: 'Channel Created Successfully.',
+          status_code: HttpStatus.OK,
+          message: i18next.t('STATUS.CHANNEL_CREATED'),
           data: {
             handle: channelCreateData.handle,
             chanel_uuid: channelCreateData.chanel_uuid,
             channel_name: channelCreateData.channel_name,
             UserId: user_uuid,
-            url: avtarData.dataValues.avtar_url,
-            created_at: channelCreateData.dataValues.created_at,
-            updated_at: channelCreateData.dataValues.updated_at,
+            url: avtarData.avtar_url,
+            created_at: channelCreateData.created_at,
+            updated_at: channelCreateData.updated_at,
           },
         };
       }
@@ -91,42 +93,222 @@ const channelResolverController = {
       if (err instanceof Error) {
         return {
           message: err.message,
-          status_code: 500,
+          status_code: HttpStatus.INTERNAL_SERVER_ERROR,
         };
       }
     }
   },
+  updateChannel: async (paraent: unknown, input: IcreateChannel, Icontext: Icontext) => {
+    try {
+      const { channel_name, handle, profile_picture } = input;
+      const { userId, user_uuid } = Icontext;
+
+      const channelData: IchannelAttributes = await Channel.findOne({
+        where: { UserId: userId },
+        rejectOnEmpty: true,
+        include: { model: Avtar, attributes: ['public_id'], as: 'Avtar' },
+        raw: true,
+        nest: true,
+      });
+      if (!channelData) {
+        return {
+          message: i18next.t('STATUS.CHANNEL_NOT_FOUND'),
+          status_code: 400,
+        };
+      }
+      logger.info(JSON.stringify(input));
+      if ((channel_name || handle) && !profile_picture) {
+        logger.info('only body');
+        await Channel.update(
+          { handle, channel_name },
+          {
+            where: {
+              UserId: userId,
+            },
+          }
+        );
+        const updatedChanelData: IchannelAttributes = (await Channel.findOne({
+          where: {
+            UserId: userId,
+          },
+          include: [{ model: Avtar, attributes: ['avtar_url'], as: 'Avtar' }],
+        })) as any;
+        return {
+          status_code: 200,
+          message: i18next.t('STATUS.CHANNEL_UPDATED_SUCCESSFULLY'),
+          data: {
+            handle: updatedChanelData?.handle,
+            chanel_uuid: updatedChanelData?.chanel_uuid,
+            channel_name: updatedChanelData?.channel_name,
+            UserId: user_uuid,
+            created_at: updatedChanelData?.created_at,
+            updated_at: updatedChanelData?.updated_at,
+            url: updatedChanelData?.Avtar?.avtar_url,
+          },
+        };
+      } else if (profile_picture && !channel_name && !handle) {
+        logger.info('only profile pic');
+
+        const upload: any = await processUpload(profile_picture);
+        const data = await picUpdatedInCloudinary(String(channelData.Avtar?.public_id), upload.path);
+        await Avtar.update(
+          { avtar_url: data.url, public_id: data.public_id },
+          {
+            where: {
+              channel_id: channelData.id,
+            },
+          }
+        );
+        const updatedChanelData: IchannelAttributes = (await Channel.findOne({
+          where: {
+            UserId: userId,
+          },
+          include: [{ model: Avtar, attributes: ['avtar_url'], as: 'Avtar' }],
+        })) as any;
+
+        return {
+          status_code: 200,
+          message: i18next.t('STATUS.CHANNEL_UPDATED_SUCCESSFULLY'),
+          data: {
+            handle: updatedChanelData?.handle,
+            chanel_uuid: updatedChanelData?.chanel_uuid,
+            channel_name: updatedChanelData?.channel_name,
+            UserId: user_uuid,
+            created_at: updatedChanelData?.created_at,
+            updated_at: updatedChanelData?.updated_at,
+            url: updatedChanelData?.Avtar?.avtar_url,
+          },
+        };
+      } else {
+        logger.info('both body and file');
+        const upload: any = await processUpload(profile_picture);
+        const data = await picUpdatedInCloudinary(String(channelData.Avtar?.public_id), upload.path);
+        await Avtar.update(
+          { avtar_url: data.url, public_id: data.public_id },
+          {
+            where: {
+              channel_id: channelData.id,
+            },
+          }
+        );
+        await Channel.update(
+          { handle, channel_name },
+          {
+            where: {
+              UserId: userId,
+            },
+          }
+        );
+        const updatedChanelData = await Channel.findOne({
+          where: {
+            UserId: userId,
+          },
+        });
+        return {
+          status_code: 200,
+          message: i18next.t('STATUS.CHANNEL_UPDATED_SUCCESSFULLY'),
+          data: {
+            handle: updatedChanelData?.handle,
+            chanel_uuid: updatedChanelData?.chanel_uuid,
+            channel_name: updatedChanelData?.channel_name,
+            UserId: user_uuid,
+            created_at: updatedChanelData?.created_at,
+            updated_at: updatedChanelData?.updated_at,
+          },
+        };
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          message: err.message,
+          status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        };
+      }
+    }
+  },
+  deleteChannel: async (paraent: unknown, input: IdeleteChannel, context: Icontext) => {
+    const { userId, user_uuid } = context;
+    logger.info(`in delete channel ${userId}`);
+    const channelData = await Channel.findOne({ where: { UserId: userId }, raw: true, nest: true });
+    if (!channelData) {
+      return {
+        message: i18next.t('STATUS.CHANNEL_NOT_FOUND'),
+        status_code: HttpStatus.BAD_REQUEST,
+      };
+    }
+    await Channel.destroy({ where: { UserId: userId } });
+    await Avtar.destroy({ where: { channel_id: channelData.id } });
+    return {
+      status_code: HttpStatus.OK,
+      message: i18next.t('STATUS.CHANNEL_DELETED_SUCCESSFULLY'),
+      data: {
+        handle: channelData?.handle,
+        chanel_uuid: channelData?.chanel_uuid,
+        channel_name: channelData?.channel_name,
+        UserId: user_uuid,
+        created_at: channelData?.created_at,
+        updated_at: channelData?.updated_at,
+      },
+    };
+  },
 };
 
 const channelQueryController = {
-  getChanelByUserId: async (paranet: unknown, input: any, context: context) => {
+  getChanelByUserId: async (paranet: unknown, input: null, context: Icontext) => {
     try {
-      logger.error('in channel query controller');
-      const { userId } = context;
-      const channelData = await Channel.findAll({
+      const { userId, user_uuid } = context;
+      const channelData: IchannelAttributes = (await Channel.findOne({
         where: {
           UserId: userId,
+          // chanel_uuid: channel_id,
         },
         include: [
           {
             model: User,
             attributes: ['email', 'phone', 'user_uuid', 'first_name', 'last_name'],
             required: false,
+            as: 'User',
+          },
+          {
+            model: Avtar,
+            required: false,
+            attributes: ['avtar_url', 'image_uuid', 'public_id'],
+            as: 'Avtar',
           },
         ],
-        attributes: { exclude: ['id', 'UserId'] },
-      });
-
-      logger.info(JSON.stringify(channelData));
+        attributes: { exclude: ['UserId'] },
+        raw: true,
+        nest: true,
+      })) as any;
+      if (!channelData) {
+        return {
+          message: i18next.t('STATUS.CHANNEL_NOT_FOUND'),
+          status_code: HttpStatus.BAD_REQUEST,
+        };
+      }
+      const subscribeCountData = await Subscribe.findAndCountAll({ where: { subscribed_channel_id: channelData.id } });
       return {
-        message: 'Get Channel List Successfully.',
-        status_code: 200,
-        data: channelData[0].dataValues,
+        message: i18next.t('STATUS.GET_CHANNEL_LIST_SUCCESSFULLY'),
+        status_code: HttpStatus.OK,
+        data: {
+          chanel_uuid: channelData.chanel_uuid,
+          channel_name: channelData.channel_name,
+          handle: channelData.handle,
+          discription: channelData.discription,
+          created_at: channelData.created_at,
+          updated_at: channelData.updated_at,
+          url: channelData.Avtar?.avtar_url,
+          subscriber_count: subscribeCountData.count,
+        },
       };
-    } catch (err) {
-      // console.log(err);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          message: err.message,
+          status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        };
+      }
     }
-    // console.log(channelData);
   },
 };
 

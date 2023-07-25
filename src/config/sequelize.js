@@ -1,12 +1,15 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-require('dotenv').config();
+const {
+  config: {
+    DB: { DB_DATABASE, DB_DIALECT, DB_HOST, DB_PASSWORD, DB_USERNAME },
+  },
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+} = require('../config');
 
-const dbName = process.env.DB_NAME;
-const dbUser = process.env.DB_USER;
-const dbHost = process.env.DB_HOST;
-const dbDriver = process.env.DB_DRIVER;
-const dbPassword = process.env.DB_PASSWORD;
-
+const dbName = DB_DATABASE;
+const dbHost = DB_HOST;
+const dbDriver = DB_DIALECT;
+const dbPassword = DB_PASSWORD;
+const dbUser = DB_USERNAME;
 module.exports = {
   development: {
     username: dbUser,

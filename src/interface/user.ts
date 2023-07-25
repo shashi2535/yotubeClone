@@ -1,4 +1,4 @@
-interface signupInput {
+interface IsignupInput {
   input: {
     first_name: string;
     last_name: string;
@@ -8,30 +8,51 @@ interface signupInput {
   };
 }
 
-interface verifyOtpInput {
+interface IverifyOtpInput {
   input: {
     phone: number;
     otp: number;
   };
 }
 
-interface resendOtpInput {
+interface IresendOtpInput {
   input: {
     user_uuid: string;
   };
 }
 
-interface LoginInput {
+interface IloginInput {
   input: {
     email: string;
     password: string;
   };
 }
 
-interface inputVerificationByCode {
+interface IinputVerificationByCode {
   input: {
     email: string;
     code: string;
   };
 }
-export { signupInput, verifyOtpInput, resendOtpInput, inputVerificationByCode, LoginInput };
+interface IUserAttributes {
+  id: number;
+  user_uuid?: string;
+  first_name?: string;
+  last_name?: string;
+  password?: string;
+  email?: string;
+  role?: string;
+  phone?: string;
+  is_phone_varified?: boolean;
+  otp_expiration_time?: Date | null;
+  reset_token?: string;
+  otp?: number | null;
+  is_email_varified?: boolean;
+  attempt?: number;
+  is_blocked?: boolean;
+  blocked_at?: Date | null;
+  created_at?: Date;
+  updated_at?: Date;
+  token_expiration_time: Date | null;
+}
+export { IsignupInput, IverifyOtpInput, IresendOtpInput, IinputVerificationByCode, IloginInput, IUserAttributes };

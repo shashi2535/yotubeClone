@@ -1,5 +1,5 @@
-import { userSchema, channelSchema } from './schema/';
-import { userResolver, ChannelResolver } from './resolver';
+import { userSchema, channelSchema, subScribeSchema } from './schema/';
+import { userResolver, ChannelResolver, subscribeResolver } from './resolver';
 import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge';
 import {
   AuthMiddleware,
@@ -10,8 +10,8 @@ import {
   verifyOtpValidateMiddleware,
   imageValidation,
 } from './directives/';
-const typedef = mergeTypeDefs([userSchema, channelSchema]);
-const resolvers = mergeResolvers([userResolver, ChannelResolver]);
+const typedef = mergeTypeDefs([userSchema, channelSchema, subScribeSchema]);
+const resolvers = mergeResolvers([userResolver, ChannelResolver, subscribeResolver]);
 export {
   resolvers,
   typedef,

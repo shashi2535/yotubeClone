@@ -1,36 +1,7 @@
-tabWidth :- property for gap the staring of line
-semi:- this property will be set the semicolon at the end of the line
-singleQuote:- this property will be set the single quote in the staring
-printWidth:- it will be set the width of the line
-
-
-
-for sequelize txt
-!commands ==>
-
-*for create new table ==>
-npx sequelize-cli model:generate --name User --attributes firstName:string,lastName:string,email:string
-
-* for update existing table ==>
-npx sequelize-cli model:generate --name User
-
-!try-catch block in ts 
-try{
-}catch (err: unknown) {
-      if (err instanceof Error) {
-        return {
-          message: err.message,
-          status_code: HttpStatus.INTERNAL_SERVER_ERROR,
-        };
-      }
-    }
-
-
-
-<<<<<<<<<<<<<<<<<<<subscribe>>>>>>>>>>>>
-
 import i18next from 'i18next';
-import { IchannelAttributes, Icontext, IcreateSubscribe } from '../interface';
+import { logger } from '../config';
+import { HttpStatus } from '../constant';
+import { IchannelAttributes, Icontext, IcreateSubscribe, IRemoveSubscribe } from '../interface';
 import { Channel, Subscribe, User } from '../models';
 import { generateUUID } from '../utils';
 
@@ -59,14 +30,14 @@ const subscribeResolverController = {
     if (channelData.User?.user_uuid === user_uuid) {
       return {
         status_code: 400,
-        message: 'You Can Not Subscribe Your Own Channel.',
+        message: i18next.t('STATUS.YOU_CAN_NOT_SUBSCRIBE_YOUR_OWN_CHANNEL'),
       };
     }
     const subscribeData = await Subscribe.findOne({ where: { subscribed_user_id: userId } });
     if (subscribeData) {
       return {
         status_code: 400,
-        message: 'Already Subscribed This Channel.',
+        message: i18next.t('STATUS.ALREADY_SUBSCRIBED'),
       };
     }
     const subscribeCreateData = await Subscribe.create({
@@ -76,7 +47,7 @@ const subscribeResolverController = {
     });
     return {
       status_code: 200,
-      message: 'Channel Subscribed Sussessfully.',
+      message: i18next.t('STATUS.CHANNEL_SUBSCRIBED_SUCCESSFULLY'),
       data: {
         subscibe_id: subscribeCreateData.dataValues.subscribe_uuid,
         channel_id: channel_id,
@@ -84,17 +55,34 @@ const subscribeResolverController = {
       },
     };
   },
+  removeSubscribe: async (parent: unknown, args: IRemoveSubscribe, context: Icontext) => {
+    const { subscribe_id } = args.input;
+    const { userId } = context;
+    const subscribeData = await Subscribe.findOne({
+      where: { subscribe_uuid: subscribe_id, subscribed_user_id: userId },
+      raw: true,
+      nest: true,
+    });
+    if (!subscribeData) {
+      return {
+        message: i18next.t('STATUS.SUBSCRIPTION_NOT_FOUND'),
+        status_code: HttpStatus.BAD_REQUEST,
+      };
+    }
+    await Subscribe.destroy({ where: { subscribe_uuid: subscribe_id } });
+    return {
+      message: i18next.t('STATUS.SUBSCRIPTION_REMOVE_SUCCESSFULLY'),
+      status_code: HttpStatus.OK,
+      data: {
+        subscibe_id: subscribe_id,
+      },
+    };
+  },
 };
-const subscribeSchemaController = {};
+const subscribeSchemaController = {
+  // getSubscribeCount: (parent: unknown, args: IRemoveSubscribe, context: Icontext) => {
+  //   console.log('getSubscribeCount');
+  // },
+};
 
 export { subscribeResolverController, subscribeSchemaController };
-
-
-
-
-translation
-
-
-
-
-

@@ -30,20 +30,33 @@ type chanelRes{
     updated_at:String
     url:String
 }
+type GetChannelRes{
+     chanel_uuid:String
+    channel_name:String
+    handle:String
+    discription:String
+    created_at:String
+    updated_at:String
+    url:String
+    subscriber_count:Int
+}
 type createChannelResponse{
   message:String
   status_code:Int
   data:chanelRes
 }
-type getChannelResponse{
-  message:String!
+type getCheannelResponse {
+   message:String
   status_code:Int
+  data: GetChannelRes
 }
 type Query{
-  getChanelByUserId:getChannelResponse  @auth
+  getChanelByUserId:getCheannelResponse  @auth
 }
 type Mutation{
 createChannel(channel_name:String!, handle:String!, profile_picture:Upload):createChannelResponse @auth @avtarValid
+updateChannel(channel_name:String, handle:String, profile_picture:Upload):createChannelResponse @auth @avtarValid
+deleteChannel:createChannelResponse @auth
   }
 type Subscription{
 createEvent:Boolean

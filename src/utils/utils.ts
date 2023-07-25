@@ -1,20 +1,27 @@
-const accountSid = process.env.ACCOUNT_SID;
-const authToken = process.env.AUTH_TOKEN;
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const client = require('twilio')(accountSid, authToken);
 import nodemailer from 'nodemailer';
-import dotenv from 'dotenv';
-dotenv.config();
 import { logger } from '../config';
+import { config } from '../config/credential.env';
 import { v4 as uuidv4, validate as isValidUUID } from 'uuid';
 import { v2 as cloudinary } from 'cloudinary';
 import crypto from 'crypto';
 export const generateOtp = () => 100000 + Math.floor(Math.random() * 900000);
+const {
+  TWILLIO: { ACCOUNT_SID, AUTH_TOKEN, TWILLIO_PHONE_NUMBER },
+  EMAIL: { EMAIL_PASSWORD, EMAIL_SERVICE, EMAIL_USERNAME },
+  CLOUDINARY: { CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET, CLOUDINARY_CLOUD_NAME },
+} = config;
+cloudinary.config({
+  cloud_name: CLOUDINARY_CLOUD_NAME,
+  api_key: CLOUDINARY_API_SECRET,
+  api_secret: CLOUDINARY_API_KEY,
+});
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const client = require('twilio')(ACCOUNT_SID, AUTH_TOKEN);
 export const SendOtp = async (phone: string, otp: number) => {
   await client.messages.create({
     body: `your otp is ${otp} `,
-    from: '+14302434792',
+    from: `${TWILLIO_PHONE_NUMBER}`,
     to: `+91${phone}`,
   });
   return true;
@@ -25,14 +32,14 @@ export const AddMinutesToDate = async (minutes: number) => {
 };
 export const sendMail = async (email: string, code: string) => {
   const mailTransporter = nodemailer.createTransport({
-    service: process.env.SERVICE,
+    service: EMAIL_SERVICE,
     auth: {
-      user: process.env.MY_EMAIL,
-      pass: process.env.MY_PASSWORD,
+      user: EMAIL_USERNAME,
+      pass: EMAIL_PASSWORD,
     },
   });
   const mailDetails = {
-    from: process.env.MY_EMAIL,
+    from: EMAIL_USERNAME,
     to: email,
     subject: 'Please Verify Your Email',
     text: `Your code is ${code} please Verify. It Will Be Expire In 25 Minutes.`,
@@ -57,12 +64,17 @@ export const validateUUID = (uuid: string) => {
     return true;
   }
 };
+
 export const picUploadInCloudinary = async (path: string) => {
-  cloudinary.config({
-    cloud_name: process.env.CLOUD_NAME,
-    api_key: process.env.API_KEY,
-    api_secret: process.env.API_SECRET,
+  const data = await cloudinary.uploader.upload(`${path}`, {
+    folder: 'channelAvtar',
   });
+  return data;
+};
+
+export const picUpdatedInCloudinary = async (public_id: string, path: string) => {
+  // v2.uploader.destroy(public_id);
+  await cloudinary.uploader.destroy(public_id);
   const data = await cloudinary.uploader.upload(`${path}`, {
     folder: 'channelAvtar',
   });

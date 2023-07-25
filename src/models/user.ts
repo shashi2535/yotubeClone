@@ -1,31 +1,13 @@
 import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
 import { sequelizeConnection } from '../config';
+import { IUserAttributes } from '../interface';
+import { Avtar } from './avtar';
 import { Channel } from './channel';
+import { Subscribe } from './subscribe';
 
-interface UserAttributes {
-  id: number;
-  user_uuid?: string;
-  first_name?: string;
-  last_name?: string;
-  password?: string;
-  email?: string;
-  role?: string;
-  phone?: string;
-  is_phone_varified?: boolean;
-  otp_expiration_time?: Date | null;
-  reset_token?: string;
-  otp?: number | null;
-  is_email_varified?: boolean;
-  attempt?: number;
-  is_blocked?: boolean;
-  blocked_at?: Date | null;
-  created_at?: Date;
-  updated_at?: Date;
-  token_expiration_time: Date | null;
-}
-export type UserInput = Optional<UserAttributes, 'id'>;
+export type UserInput = Optional<IUserAttributes, 'id'>;
 
-class User extends Model<UserAttributes, UserInput> implements UserAttributes {
+class User extends Model {
   public id!: number;
   public user_uuid: string;
   public first_name: string;
@@ -47,7 +29,6 @@ class User extends Model<UserAttributes, UserInput> implements UserAttributes {
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
 }
-
 User.init(
   {
     id: {
@@ -124,8 +105,14 @@ User.init(
     sequelize: sequelizeConnection,
     paranoid: true,
     tableName: 'user',
+    modelName: 'User',
   }
 );
-// User.hasOne(Channel, { foreignKey: 'userId' });
+User.hasOne(Avtar, { foreignKey: 'user_id' });
+User.hasOne(Channel, { foreignKey: 'UserId' });
+Avtar.belongsTo(User, { foreignKey: 'user_id', as: 'User' });
+Channel.belongsTo(User), { foreignKey: 'UserId', as: 'User' };
 
+User.hasOne(Subscribe, { foreignKey: 'subscribed_user_id', as: 'Subscribe' });
+Subscribe.belongsTo(User, { foreignKey: 'subscribed_user_id' });
 export { User };
