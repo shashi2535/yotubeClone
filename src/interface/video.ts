@@ -31,4 +31,15 @@ interface ICreateVideo {
   video_url?: Promise<IVideoFile>;
 }
 
-export { IVideoAttributes, ICreateVideo };
+interface IdeleteVideo {
+  video_id: string;
+}
+interface IUpdateVideo {
+  input: {
+    video_id: string;
+    title: string;
+    description: string;
+  };
+}
+
+export { IVideoAttributes, ICreateVideo, IdeleteVideo, IUpdateVideo };

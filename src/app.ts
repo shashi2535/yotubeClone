@@ -20,6 +20,8 @@ import {
   checkAuthMiddleware,
   verifiedChannelByAdminValidateMiddleware,
   videoDeleteValidateMiddleware,
+  videoUpdateValidateMiddleware,
+  createLikeOnVideoValidateMiddleware,
 } from './graphql';
 import { connection } from './config/';
 import http from 'http';
@@ -61,6 +63,8 @@ const expressServer = async () => {
     resolvers,
   });
   // new midleware is priority first for calling
+  schema = createLikeOnVideoValidateMiddleware(schema, 'creaeLikeValid');
+  schema = videoUpdateValidateMiddleware(schema, 'videoUpdateValid');
   schema = videoDeleteValidateMiddleware(schema, 'videoDeleteValid');
   schema = verifiedChannelByAdminValidateMiddleware(schema, 'verifyChannelValid');
   schema = videoValidation(schema, 'videoValid');

@@ -1,5 +1,5 @@
-import { userSchema, channelSchema, subScribeSchema, videoSchema } from './schema/';
-import { userResolver, ChannelResolver, subscribeResolver, VideoResolver } from './resolver';
+import { userSchema, channelSchema, subScribeSchema, videoSchema, likeSchema } from './schema/';
+import { userResolver, ChannelResolver, subscribeResolver, VideoResolver, likeResolver } from './resolver';
 import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge';
 import {
   AuthMiddleware,
@@ -13,9 +13,11 @@ import {
   videoValidation,
   verifiedChannelByAdminValidateMiddleware,
   videoDeleteValidateMiddleware,
+  videoUpdateValidateMiddleware,
+  createLikeOnVideoValidateMiddleware,
 } from './directives/';
-const typedef = mergeTypeDefs([userSchema, channelSchema, subScribeSchema, videoSchema]);
-const resolvers = mergeResolvers([userResolver, ChannelResolver, subscribeResolver, VideoResolver]);
+const typedef = mergeTypeDefs([userSchema, channelSchema, subScribeSchema, videoSchema, likeSchema]);
+const resolvers = mergeResolvers([userResolver, ChannelResolver, subscribeResolver, VideoResolver, likeResolver]);
 export {
   resolvers,
   typedef,
@@ -30,4 +32,6 @@ export {
   videoValidation,
   verifiedChannelByAdminValidateMiddleware,
   videoDeleteValidateMiddleware,
+  videoUpdateValidateMiddleware,
+  createLikeOnVideoValidateMiddleware,
 };

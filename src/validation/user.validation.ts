@@ -33,6 +33,7 @@ const description = yup
   .string()
   .required('description is required')
   .min(5, 'description should have atleast 5 characters.');
+const type = yup.string().required('type is required').oneOf(['like', 'dislike']);
 
 export const UserRegisterationRules = yup.object().shape({
   password,
@@ -69,4 +70,15 @@ export const verifiedCreateVideoRule = yup.object().shape({
 });
 export const videoUpdateRule = yup.object().shape({
   video_id,
+});
+
+export const updateVideoRule = yup.object().shape({
+  video_id,
+  title,
+  description,
+});
+
+export const likeCreateOnVideoRule = yup.object().shape({
+  video_id,
+  type,
 });

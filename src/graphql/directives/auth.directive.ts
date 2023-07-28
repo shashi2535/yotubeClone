@@ -11,6 +11,8 @@ import {
   verifiedChannelByAdminRule,
   verifiedCreateVideoRule,
   videoUpdateRule,
+  updateVideoRule,
+  likeCreateOnVideoRule,
 } from '../../validation';
 import {
   IloginInput,
@@ -19,6 +21,8 @@ import {
   IverifyOtpInput,
   Icontext,
   ICreateVideo,
+  IUpdateVideo,
+  IlikeCreateReq,
 } from '../../interface';
 import i18next from 'i18next';
 import { validateUUID } from '../../utils';
@@ -281,7 +285,61 @@ const videoDeleteValidateMiddleware = (schema: GraphQLSchema, directiveName: any
     },
   });
 };
+const videoUpdateValidateMiddleware = (schema: GraphQLSchema, directiveName: any) => {
+  return mapSchema(schema, {
+    // Executes once for each object field definition in the schema
+    [MapperKind.OBJECT_FIELD]: (fieldConfig: any) => {
+      const deprecatedDirective = getDirective(schema, fieldConfig, directiveName)?.[0];
+      if (deprecatedDirective) {
+        // Get this field's original resolver
+        const { resolve = defaultFieldResolver } = fieldConfig;
+        fieldConfig.resolve = async function (source: unknown, args: IUpdateVideo, Icontext: any, info: unknown) {
+          const { description, title, video_id } = args.input;
+          logger.info(`input in videoUpdateValidateMiddleware validation>>> ${JSON.stringify(args)}`);
+          await updateVideoRule.validate({ description, title, video_id });
+          if (!validateUUID(video_id)) {
+            return {
+              message: 'Invalid video_id.',
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
+          const result = await resolve(source, args, Icontext, info);
+          return result;
+        };
+        return fieldConfig;
+      }
+    },
+  });
+};
 
+const createLikeOnVideoValidateMiddleware = (schema: GraphQLSchema, directiveName: any) => {
+  return mapSchema(schema, {
+    // Executes once for each object field definition in the schema
+    [MapperKind.OBJECT_FIELD]: (fieldConfig: any) => {
+      const deprecatedDirective = getDirective(schema, fieldConfig, directiveName)?.[0];
+      if (deprecatedDirective) {
+        // Get this field's original resolver
+        const { resolve = defaultFieldResolver } = fieldConfig;
+        fieldConfig.resolve = async function (source: unknown, args: IlikeCreateReq, Icontext: any, info: unknown) {
+          const { type, video_id } = args.input;
+          logger.info(`input in createLikeOnVideoValidateMiddleware validation>>> ${JSON.stringify(args)}`);
+          await likeCreateOnVideoRule.validate({ type, video_id });
+          if (!validateUUID(video_id)) {
+            return {
+              message: 'Invalid video_id.',
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
+          const result = await resolve(source, args, Icontext, info);
+          return result;
+        };
+        return fieldConfig;
+      }
+    },
+  });
+};
+
+// updateVideoRule;
 export {
   AuthMiddleware,
   loginValidateMiddleware,
@@ -294,4 +352,6 @@ export {
   videoValidation,
   verifiedChannelByAdminValidateMiddleware,
   videoDeleteValidateMiddleware,
+  videoUpdateValidateMiddleware,
+  createLikeOnVideoValidateMiddleware,
 };

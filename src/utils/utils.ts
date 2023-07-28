@@ -103,3 +103,8 @@ export const videoUploadInCloudinary = async (path: string) => {
   });
   return data;
 };
+export const videoDeleteInCloudinary = async (public_id: string) => {
+  // v2.uploader.destroy(public_id);
+  const data = await cloudinary.uploader.destroy(public_id, { resource_type: 'video' });
+  return data;
+};
