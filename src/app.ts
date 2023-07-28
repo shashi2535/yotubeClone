@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ApolloServer, ApolloError } from 'apollo-server-express';
+import { ApolloServer } from 'apollo-server-express';
 import express from 'express';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { handle as i18nextMiddlewareHandle, LanguageDetector } from 'i18next-http-middleware';
@@ -16,11 +16,14 @@ import {
   resendCodeOnEmailValidateMiddleware,
   verifyOtpValidateMiddleware,
   imageValidation,
+  videoValidation,
+  checkAuthMiddleware,
+  verifiedChannelByAdminValidateMiddleware,
+  videoDeleteValidateMiddleware,
 } from './graphql';
 import { connection } from './config/';
 import http from 'http';
 import { logger } from './config';
-import { GraphQLError } from 'graphql';
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { ApolloServerPluginDrainHttpServer, ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core';
@@ -58,6 +61,10 @@ const expressServer = async () => {
     resolvers,
   });
   // new midleware is priority first for calling
+  schema = videoDeleteValidateMiddleware(schema, 'videoDeleteValid');
+  schema = verifiedChannelByAdminValidateMiddleware(schema, 'verifyChannelValid');
+  schema = videoValidation(schema, 'videoValid');
+  schema = checkAuthMiddleware(schema, 'roleCheck');
   schema = verifyOtpValidateMiddleware(schema, 'verifyOtpValid');
   schema = resendCodeOnEmailValidateMiddleware(schema, 'resendCodeOnEmailValid');
   schema = verifyEmailValidateMiddleware(schema, 'verifyEmailValid');
@@ -84,10 +91,12 @@ const expressServer = async () => {
         return data;
       }
     },
-    formatError: (err: unknown): any => {
-      if (err instanceof GraphQLError) {
-        return new ApolloError(err.message);
-      }
+    formatError: (err: any): any => {
+      return {
+        message: err.message,
+        status_code: 500,
+      };
+      // throw new ApolloError(err.message);
     },
     csrfPrevention: false,
     cache: 'bounded',

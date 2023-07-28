@@ -1,6 +1,6 @@
-import { logger, pubsub } from '../config';
+import { logger } from '../config';
 import { HttpStatus } from '../constant';
-import { Icontext, IcreateChannel, IchannelAttributes, IdeleteChannel } from '../interface/channel';
+import { Icontext, IcreateChannel, IchannelAttributes, IdeleteChannel, IupdateChannel } from '../interface/';
 import { User, Channel, Avtar, Subscribe } from '../models';
 import { generateUUID, picUpdatedInCloudinary, picUploadInCloudinary } from '../utils';
 import { createWriteStream } from 'fs';
@@ -8,20 +8,17 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import i18next from 'i18next';
 
-const storeUpload = async ({ stream, filename, mimetype }: any) => {
+const processUpload = async (upload: any) => {
+  const { createReadStream, filename, mimetype } = await upload;
+  const stream = createReadStream();
   const id = Date.now();
   const path = `${join(tmpdir())}/${id}${filename.replace(/ /g, '')}`;
-  return new Promise((resolve, reject) =>
+  const file = new Promise((resolve, reject) =>
     stream
       .pipe(createWriteStream(path))
       .on('finish', () => resolve({ path, filename, mimetype }))
       .on('error', reject)
   );
-};
-const processUpload = async (upload: any) => {
-  const { createReadStream, filename, mimetype } = await upload;
-  const stream = createReadStream();
-  const file = await storeUpload({ stream, filename, mimetype });
   return file;
 };
 const channelResolverController = {
@@ -251,6 +248,40 @@ const channelResolverController = {
       },
     };
   },
+  verifiedChannelByAdmin: async (paraent: unknown, input: IupdateChannel, context: Icontext) => {
+    try {
+      const { channel_id } = input;
+      logger.info(`verifiedChannelByAdmin>>>>>>${channel_id}`);
+      const channelData = await Channel.findOne({ where: { chanel_uuid: channel_id }, raw: true, nest: true });
+      if (!channelData) {
+        return {
+          status_code: HttpStatus.BAD_REQUEST,
+          message: i18next.t('STATUS.CHANNEL_NOT_FOUND'),
+        };
+      }
+      if (channelData.is_verified) {
+        return {
+          status_code: HttpStatus.BAD_REQUEST,
+          message: i18next.t('STATUS.CHANNEL_ALREADY_VERIFIED'),
+        };
+      }
+      const subscribeCountData = await Subscribe.count({ where: { subscribed_channel_uuid: channel_id } });
+      if (subscribeCountData >= 1) {
+        await Channel.update({ is_verified: true }, { where: { chanel_uuid: channel_id } });
+        return {
+          status_code: HttpStatus.OK,
+          message: i18next.t('STATUS.CHANNEL_VERIFIED_SUCCESSFULLY'),
+        };
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          message: err.message,
+          status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        };
+      }
+    }
+  },
 };
 
 const channelQueryController = {
@@ -369,5 +400,13 @@ export { channelQueryController, channelResolverController };
 //   "input":{
 //   "channel_name":"fdsfsfdasffff",
 //   "handle":"fffffffffffffffffffffff"
+//   }
+// }
+
+// >>>>>>    For The Create Video  <<<<<<<<<<
+// {
+//   "createVideoInput":{
+//     "title":"rtrer",
+//     "description":"sadfdas"
 //   }
 // }

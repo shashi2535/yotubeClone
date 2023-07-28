@@ -1,9 +1,12 @@
 import i18next from 'i18next';
+import { fn, col, Op, where } from 'sequelize';
+import Sequelize from 'sequelize';
 import { logger } from '../config';
 import { HttpStatus } from '../constant';
-import { IchannelAttributes, Icontext, IcreateSubscribe, IRemoveSubscribe } from '../interface';
-import { Channel, Subscribe, User } from '../models';
+import { IchannelAttributes, Icontext, IcreateSubscribe, IRemoveSubscribe, ISubscribeAttributes } from '../interface';
+import { Avtar, Channel, Subscribe, User } from '../models';
 import { generateUUID } from '../utils';
+import { Where } from 'sequelize/types/utils';
 
 const subscribeResolverController = {
   createSubscribe: async (parent: unknown, args: IcreateSubscribe, context: Icontext) => {
@@ -44,6 +47,7 @@ const subscribeResolverController = {
       subscribed_channel_id: channelData.id,
       subscribe_uuid: generateUUID(),
       subscribed_user_id: userId,
+      subscribed_channel_uuid: channelData.chanel_uuid,
     });
     return {
       status_code: 200,
@@ -80,9 +84,55 @@ const subscribeResolverController = {
   },
 };
 const subscribeSchemaController = {
-  // getSubscribeCount: (parent: unknown, args: IRemoveSubscribe, context: Icontext) => {
-  //   console.log('getSubscribeCount');
-  // },
+  getSubscribedChannelByAdmin: async (parent: unknown, args: IRemoveSubscribe, context: Icontext) => {
+    try {
+      const subscribeData: ISubscribeAttributes[] = await Subscribe.findAll({
+        raw: true,
+        nest: true,
+        attributes: [
+          'subscribed_channel_id',
+          [fn('count', col('subscribed_channel_id')), 'subscribed_channel_id_count'],
+        ],
+        include: [
+          {
+            model: Channel,
+            as: 'Channel',
+            where: { is_verified: false },
+            attributes: ['chanel_uuid', 'channel_name', 'handle', 'is_verified'],
+            include: [
+              {
+                model: Avtar,
+                as: 'Avtar',
+                attributes: ['image_uuid', 'avtar_url'],
+              },
+            ],
+          },
+        ],
+        having: {
+          subscribed_channel_id_count: {
+            [Op.gt]: 0,
+          },
+        },
+      });
+      if (subscribeData.length == 0) {
+        return {
+          status_code: 400,
+          message: 'Subscription Not Found.',
+          data: [],
+        };
+      }
+      return {
+        status_code: 200,
+        message: 'Get Subscribetion List Successfully.',
+        data: subscribeData,
+      };
+    } catch (err: any) {
+      return {
+        status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: err.message,
+      };
+    }
+  },
 };
 
 export { subscribeResolverController, subscribeSchemaController };

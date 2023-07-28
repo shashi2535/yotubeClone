@@ -26,6 +26,14 @@ const otp = yup
   .min(6, 'otp should have atleast 6 characters.')
   .max(6, 'otp should have atleast 6 characters.');
 const code = yup.string().required('code is required').min(8, 'code should have atleast 8 characters.');
+const channel_id = yup.string().required('channel_id is required');
+const video_id = yup.string().required('video_id is required');
+const title = yup.string().required('title is required').min(5, 'title should have atleast 5 characters.');
+const description = yup
+  .string()
+  .required('description is required')
+  .min(5, 'description should have atleast 5 characters.');
+
 export const UserRegisterationRules = yup.object().shape({
   password,
   first_name,
@@ -50,4 +58,15 @@ export const resendCodeOnEmailRule = yup.object().shape({
 export const verifyOtpRule = yup.object().shape({
   phone,
   otp,
+});
+
+export const verifiedChannelByAdminRule = yup.object().shape({
+  channel_id,
+});
+export const verifiedCreateVideoRule = yup.object().shape({
+  title,
+  description,
+});
+export const videoUpdateRule = yup.object().shape({
+  video_id,
 });

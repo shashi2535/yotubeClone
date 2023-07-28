@@ -2,6 +2,9 @@
 const channelSchema = `#graphql
 directive @auth on FIELD_DEFINITION
 directive @avtarValid on FIELD_DEFINITION
+directive @roleCheck on FIELD_DEFINITION
+directive @verifyChannelValid on FIELD_DEFINITION
+
   scalar Upload
   type fileUploadResponse {
     message:String
@@ -53,10 +56,16 @@ type getCheannelResponse {
 type Query{
   getChanelByUserId:getCheannelResponse  @auth
 }
+type verifiedChannelByAdminRes{
+  message:String
+  status_code:Int
+}
+
 type Mutation{
 createChannel(channel_name:String!, handle:String!, profile_picture:Upload):createChannelResponse @auth @avtarValid
 updateChannel(channel_name:String, handle:String, profile_picture:Upload):createChannelResponse @auth @avtarValid
 deleteChannel:createChannelResponse @auth
+verifiedChannelByAdmin(channel_id:String):verifiedChannelByAdminRes  @auth @roleCheck @verifyChannelValid
   }
 type Subscription{
 createEvent:Boolean

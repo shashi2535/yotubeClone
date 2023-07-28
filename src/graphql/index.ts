@@ -1,5 +1,5 @@
-import { userSchema, channelSchema, subScribeSchema } from './schema/';
-import { userResolver, ChannelResolver, subscribeResolver } from './resolver';
+import { userSchema, channelSchema, subScribeSchema, videoSchema } from './schema/';
+import { userResolver, ChannelResolver, subscribeResolver, VideoResolver } from './resolver';
 import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge';
 import {
   AuthMiddleware,
@@ -9,9 +9,13 @@ import {
   resendCodeOnEmailValidateMiddleware,
   verifyOtpValidateMiddleware,
   imageValidation,
+  checkAuthMiddleware,
+  videoValidation,
+  verifiedChannelByAdminValidateMiddleware,
+  videoDeleteValidateMiddleware,
 } from './directives/';
-const typedef = mergeTypeDefs([userSchema, channelSchema, subScribeSchema]);
-const resolvers = mergeResolvers([userResolver, ChannelResolver, subscribeResolver]);
+const typedef = mergeTypeDefs([userSchema, channelSchema, subScribeSchema, videoSchema]);
+const resolvers = mergeResolvers([userResolver, ChannelResolver, subscribeResolver, VideoResolver]);
 export {
   resolvers,
   typedef,
@@ -22,4 +26,8 @@ export {
   resendCodeOnEmailValidateMiddleware,
   verifyOtpValidateMiddleware,
   imageValidation,
+  checkAuthMiddleware,
+  videoValidation,
+  verifiedChannelByAdminValidateMiddleware,
+  videoDeleteValidateMiddleware,
 };

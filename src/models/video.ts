@@ -1,39 +1,60 @@
 import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
 import { sequelizeConnection } from '../config';
-import { ISubscribeAttributes } from '../interface/';
+import { VideoTypes } from '../constant';
+import { IVideoAttributes } from '../interface/';
 
-export type subscribeInput = Optional<ISubscribeAttributes, 'id'>;
+export type videoInput = Optional<IVideoAttributes, 'id'>;
 
-class Subscribe extends Model<ISubscribeAttributes, subscribeInput> implements ISubscribeAttributes {
+class Video extends Model<IVideoAttributes, videoInput> implements IVideoAttributes {
   public id!: number;
-  public subscribe_uuid: string;
-  public subscribed_channel_id: number;
-  public subscribed_user_id: number;
-  public subscribed_channel_uuid: string;
+  public video_uuid: string;
+  public channel_id: number;
+  public user_id: number;
+  public video_url: string;
+  public description: string;
+  public type?: string;
+  public title?: string;
+  public video_view?: number;
+  public public_id?: string;
   // timestamps!
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
 }
 
-Subscribe.init(
+Video.init(
   {
     id: {
       type: DataTypes.INTEGER.UNSIGNED,
       autoIncrement: true,
       primaryKey: true,
     },
-    subscribe_uuid: {
+    video_uuid: {
       type: DataTypes.UUID,
     },
-    subscribed_channel_id: {
+    channel_id: {
       type: DataTypes.INTEGER,
     },
-    subscribed_user_id: {
+    user_id: {
       type: DataTypes.INTEGER,
     },
-    subscribed_channel_uuid: {
-      type: DataTypes.UUID,
+    video_url: {
+      type: DataTypes.STRING,
+    },
+    description: {
+      type: DataTypes.STRING,
+    },
+    type: {
+      type: DataTypes.ENUM(VideoTypes.SHORT, VideoTypes.VIDEO),
       defaultValue: null,
+    },
+    title: {
+      type: DataTypes.STRING,
+    },
+    public_id: {
+      type: DataTypes.STRING,
+    },
+    video_view: {
+      type: DataTypes.INTEGER,
     },
     created_at: {
       type: DataTypes.DATE,
@@ -52,12 +73,12 @@ Subscribe.init(
     timestamps: false,
     sequelize: sequelizeConnection,
     paranoid: true,
-    tableName: 'subscribe',
-    modelName: 'Subscribe',
+    tableName: 'video',
+    modelName: 'Video',
   }
 );
 // Channel.hasOne(Avtar, { foreignKey: 'channel_id', as: 'Avtar' });
 // Avtar.belongsTo(Channel, { foreignKey: 'channel_id' });
 // Avtar.belongsTo(User);
 
-export { Subscribe };
+export { Video };

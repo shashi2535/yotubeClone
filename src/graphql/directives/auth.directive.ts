@@ -8,9 +8,20 @@ import {
   verifyEmailRules,
   resendCodeOnEmailRule,
   verifyOtpRule,
+  verifiedChannelByAdminRule,
+  verifiedCreateVideoRule,
+  videoUpdateRule,
 } from '../../validation';
-import { IloginInput, IsignupInput, IinputVerificationByCode, IverifyOtpInput } from '../../interface';
+import {
+  IloginInput,
+  IsignupInput,
+  IinputVerificationByCode,
+  IverifyOtpInput,
+  Icontext,
+  ICreateVideo,
+} from '../../interface';
 import i18next from 'i18next';
+import { validateUUID } from '../../utils';
 
 const AuthMiddleware = (schema: GraphQLSchema, directiveName: any) => {
   return mapSchema(schema, {
@@ -65,7 +76,6 @@ const imageValidation = (schema: GraphQLSchema, directiveName: any) => {
     },
   });
 };
-
 const loginValidateMiddleware = (schema: GraphQLSchema, directiveName: any) => {
   return mapSchema(schema, {
     // Executes once for each object field definition in the schema
@@ -85,7 +95,6 @@ const loginValidateMiddleware = (schema: GraphQLSchema, directiveName: any) => {
     },
   });
 };
-
 const signupValidateMiddleware = (schema: GraphQLSchema, directiveName: any) => {
   return mapSchema(schema, {
     // Executes once for each object field definition in the schema
@@ -129,7 +138,6 @@ const verifyEmailValidateMiddleware = (schema: GraphQLSchema, directiveName: any
     },
   });
 };
-
 const resendCodeOnEmailValidateMiddleware = (schema: GraphQLSchema, directiveName: any) => {
   return mapSchema(schema, {
     // Executes once for each object field definition in the schema
@@ -168,6 +176,111 @@ const verifyOtpValidateMiddleware = (schema: GraphQLSchema, directiveName: any) 
     },
   });
 };
+const checkAuthMiddleware = (schema: GraphQLSchema, directiveName: any) => {
+  return mapSchema(schema, {
+    // Executes once for each object field definition in the schema
+    [MapperKind.OBJECT_FIELD]: (fieldConfig: any) => {
+      const deprecatedDirective = getDirective(schema, fieldConfig, directiveName)?.[0];
+      if (deprecatedDirective) {
+        // Get this field's original resolver
+        const { resolve = defaultFieldResolver } = fieldConfig;
+        // Replace the original resolver with a function that *first* calls
+        // the original resolver, then converts its result to upper case
+        fieldConfig.resolve = async function (source: unknown, args: unknown, context: Icontext, info: unknown) {
+          logger.info(`check role >>> ${JSON.stringify(context)}`);
+          if (context.role !== '1') {
+            return {
+              status_code: HttpStatus.UNAUTHORIZED,
+              message: i18next.t('STATUS.UNABLE_TO_ACCESS'),
+            };
+          }
+          return await resolve(source, args, context, info);
+        };
+        return fieldConfig;
+      }
+    },
+  });
+};
+const videoValidation = (schema: GraphQLSchema, directiveName: any) => {
+  return mapSchema(schema, {
+    // Executes once for each object field definition in the schema
+    [MapperKind.OBJECT_FIELD]: (fieldConfig: any) => {
+      const deprecatedDirective = getDirective(schema, fieldConfig, directiveName)?.[0];
+      if (deprecatedDirective) {
+        // Get this field's original resolver
+        const { resolve = defaultFieldResolver } = fieldConfig;
+        // Replace the original resolver with a function that *first* calls
+        // the original resolver, then converts its result to upper case
+        fieldConfig.resolve = async function (source: unknown, args: ICreateVideo, context: any, info: unknown) {
+          const file = await args?.video_url;
+          const { description, title } = args.input;
+          await verifiedCreateVideoRule.validate({ description, title });
+          if (file) {
+            if (file?.mimetype !== 'video/mp4') {
+              return {
+                status_code: HttpStatus.BAD_REQUEST,
+                message: i18next.t('STATUS.ONLY_VIDEO_ALLOWED'),
+              };
+            }
+          }
+          return await resolve(source, args, context, info);
+        };
+        return fieldConfig;
+      }
+    },
+  });
+};
+const verifiedChannelByAdminValidateMiddleware = (schema: GraphQLSchema, directiveName: any) => {
+  return mapSchema(schema, {
+    // Executes once for each object field definition in the schema
+    [MapperKind.OBJECT_FIELD]: (fieldConfig: any) => {
+      const deprecatedDirective = getDirective(schema, fieldConfig, directiveName)?.[0];
+      if (deprecatedDirective) {
+        // Get this field's original resolver
+        const { resolve = defaultFieldResolver } = fieldConfig;
+        fieldConfig.resolve = async function (source: unknown, args: any, Icontext: any, info: unknown) {
+          logger.info(`input in verifiedChannelByAdminValidateMiddleware validation>>> ${JSON.stringify(args)}`);
+          await verifiedChannelByAdminRule.validate(args);
+          if (!validateUUID(args.channel_id)) {
+            return {
+              message: 'Invalid Channel Id.',
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
+          const result = await resolve(source, args, Icontext, info);
+          return result;
+        };
+        return fieldConfig;
+      }
+    },
+  });
+};
+
+const videoDeleteValidateMiddleware = (schema: GraphQLSchema, directiveName: any) => {
+  return mapSchema(schema, {
+    // Executes once for each object field definition in the schema
+    [MapperKind.OBJECT_FIELD]: (fieldConfig: any) => {
+      const deprecatedDirective = getDirective(schema, fieldConfig, directiveName)?.[0];
+      if (deprecatedDirective) {
+        // Get this field's original resolver
+        const { resolve = defaultFieldResolver } = fieldConfig;
+        fieldConfig.resolve = async function (source: unknown, args: any, Icontext: any, info: unknown) {
+          logger.info(`input in videoDeleteValidateMiddleware validation>>> ${JSON.stringify(args)}`);
+          await videoUpdateRule.validate(args);
+          if (!validateUUID(args.video_id)) {
+            return {
+              message: 'Invalid video_id.',
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
+          const result = await resolve(source, args, Icontext, info);
+          return result;
+        };
+        return fieldConfig;
+      }
+    },
+  });
+};
 
 export {
   AuthMiddleware,
@@ -177,4 +290,8 @@ export {
   resendCodeOnEmailValidateMiddleware,
   verifyOtpValidateMiddleware,
   imageValidation,
+  checkAuthMiddleware,
+  videoValidation,
+  verifiedChannelByAdminValidateMiddleware,
+  videoDeleteValidateMiddleware,
 };

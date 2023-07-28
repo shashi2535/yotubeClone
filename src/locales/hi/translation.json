@@ -90,6 +90,11 @@
     "CHANNEL_SUBSCRIBED_SUCCESSFULLY": "चैनल को सब्सक्राइब किया गया.",
     "ONLY_IMAGE_ALLOW": "केवल छवि की अनुमति है.",
     "SUBSCRIPTION_NOT_FOUND": "सदस्यता नहीं मिली.",
-    "SUBSCRIPTION_REMOVE_SUCCESSFULLY": "सदस्यता सफलतापूर्वक हटा दी गई."
+    "SUBSCRIPTION_REMOVE_SUCCESSFULLY": "सदस्यता सफलतापूर्वक हटा दी गई.",
+    "UNABLE_TO_ACCESS": "आप इस मार्ग तक पहुँचने के लिए अधिकृत नहीं हैं.",
+    "ONLY_VIDEO_ALLOWED": "केवल वीडियो की अनुमति है.",
+    "CHANNEL_VERIFIED_SUCCESSFULLY": "चैनल सफलतापूर्वक सत्यापित.",
+    "CHANNEL_ALREADY_VERIFIED": "चैनल पहले ही सत्यापित है.",
+    "VIDEO_UPLOADED": "वीडियो सफलतापूर्वक अपलोड हो गया."
   }
 }

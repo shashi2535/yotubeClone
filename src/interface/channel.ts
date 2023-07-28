@@ -2,8 +2,9 @@ import { IAvtarAttributes } from './avtar';
 import { IUserAttributes } from './user';
 
 interface Icontext {
-  userId: number;
-  user_uuid: string;
+  userId?: number;
+  user_uuid?: string;
+  role?: string;
 }
 
 interface IcreateChannel {
@@ -22,9 +23,14 @@ interface IchannelAttributes {
   updated_at?: Date;
   Avtar?: IAvtarAttributes;
   User?: IUserAttributes;
+  is_verified?: boolean;
+}
+
+interface IupdateChannel {
+  channel_id: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IdeleteChannel {}
 
-export { Icontext, IcreateChannel, IchannelAttributes, IdeleteChannel };
+export { Icontext, IcreateChannel, IchannelAttributes, IdeleteChannel, IupdateChannel };

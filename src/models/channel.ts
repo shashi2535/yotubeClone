@@ -3,7 +3,6 @@ import { sequelizeConnection } from '../config';
 import { IchannelAttributes } from '../interface/';
 import { Avtar } from './avtar';
 import { Subscribe } from './subscribe';
-import { User } from './user';
 
 export type channelInput = Optional<IchannelAttributes, 'id'>;
 
@@ -14,6 +13,7 @@ class Channel extends Model<IchannelAttributes, channelInput> implements Ichanne
   public channel_name: string;
   public handle: string;
   public discription: string;
+  public is_verified: boolean;
   // timestamps!
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
@@ -40,6 +40,9 @@ Channel.init(
     },
     discription: {
       type: DataTypes.STRING,
+    },
+    is_verified: {
+      type: DataTypes.BOOLEAN,
     },
     created_at: {
       type: DataTypes.DATE,

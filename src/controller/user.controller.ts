@@ -1,4 +1,4 @@
-import { HttpStatus } from '../constant';
+import { HttpStatus, UserRoles } from '../constant';
 import { IinputVerificationByCode, IloginInput, IresendOtpInput, IsignupInput, IverifyOtpInput } from '../interface';
 import { sign } from 'jsonwebtoken';
 import { genSalt, hash, compare } from 'bcrypt';
@@ -15,7 +15,6 @@ import {
 } from '../utils';
 import { logger, pubsub } from '../config';
 import i18next from 'i18next';
-
 
 const userResolverController = {
   createUser: async (parent: unknown, input: IsignupInput) => {
@@ -48,6 +47,7 @@ const userResolverController = {
         otp_expiration_time: otpExpirationTime,
         reset_token: await GenerateCodeForEmail(),
         token_expiration_time: await AddMinutesToDate(25),
+        role: UserRoles.USER,
       });
       await SendOtp(phone, userCreateData.otp);
       await sendMail(email, userCreateData.reset_token);
@@ -314,6 +314,7 @@ const userResolverController = {
       const { email, password } = input.input;
       const { EXPIRES_IN, JWT_SECRET } = config.JWT;
       const userData = await User.findOne({ where: { email } });
+      // logger.info('in login controller');
       if (!userData) {
         return {
           status_code: HttpStatus.BAD_REQUEST,

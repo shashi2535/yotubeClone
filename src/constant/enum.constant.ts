@@ -18,3 +18,8 @@ export enum Locale {
   EN = 'en',
   HI = 'hi',
 }
+
+export enum VideoTypes {
+  SHORT = 'shorts',
+  VIDEO = 'full_video',
+}

@@ -90,6 +90,11 @@
     "CHANNEL_SUBSCRIBED_SUCCESSFULLY": "Channel Subscribed Sussessfully.",
     "ONLY_IMAGE_ALLOW": "Only Image Is Allowed.",
     "SUBSCRIPTION_NOT_FOUND": "Subscription Not Found.",
-    "SUBSCRIPTION_REMOVE_SUCCESSFULLY": "Subscription Deleted Successfully."
+    "SUBSCRIPTION_REMOVE_SUCCESSFULLY": "Subscription Deleted Successfully.",
+    "UNABLE_TO_ACCESS": "You Are Not Authorized To Acess This Route.",
+    "ONLY_VIDEO_ALLOWED": "Only Video Is Allowed.",
+    "CHANNEL_VERIFIED_SUCCESSFULLY": "Channel Verified Successfully.",
+    "CHANNEL_ALREADY_VERIFIED": "Channel Already Verified.",
+    "VIDEO_UPLOADED": "Video Uploaded Successfully."
   }
 }

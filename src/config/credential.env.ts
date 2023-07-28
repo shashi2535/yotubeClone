@@ -1,8 +1,7 @@
 import { config as dotEnvConfig } from 'dotenv';
 import { ApiVersions, NodeEnv } from '../constant';
 import { getOsEnv, normalizePort, toNumber } from '../service';
-dotEnvConfig({ path: '.env' });
-
+dotEnvConfig({ path: `.env.${process.env.NODE_ENV}` });
 export const config = {
   APP_NAME: 'Node',
   NODE_ENV: getOsEnv('NODE_ENV'),
