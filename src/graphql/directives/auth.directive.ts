@@ -13,6 +13,9 @@ import {
   videoUpdateRule,
   updateVideoRule,
   likeCreateOnVideoRule,
+  commentCreateOnVideoRule,
+  commentDeleteOnVideoRule,
+  commentUpdateOnVideoRule,
 } from '../../validation';
 import {
   IloginInput,
@@ -23,6 +26,9 @@ import {
   ICreateVideo,
   IUpdateVideo,
   IlikeCreateReq,
+  IcommentCreateAttributes,
+  IcommentDeleteAttributes,
+  IcommentUpdateAttributes,
 } from '../../interface';
 import i18next from 'i18next';
 import { validateUUID } from '../../utils';
@@ -259,7 +265,6 @@ const verifiedChannelByAdminValidateMiddleware = (schema: GraphQLSchema, directi
     },
   });
 };
-
 const videoDeleteValidateMiddleware = (schema: GraphQLSchema, directiveName: any) => {
   return mapSchema(schema, {
     // Executes once for each object field definition in the schema
@@ -311,7 +316,6 @@ const videoUpdateValidateMiddleware = (schema: GraphQLSchema, directiveName: any
     },
   });
 };
-
 const createLikeOnVideoValidateMiddleware = (schema: GraphQLSchema, directiveName: any) => {
   return mapSchema(schema, {
     // Executes once for each object field definition in the schema
@@ -327,6 +331,99 @@ const createLikeOnVideoValidateMiddleware = (schema: GraphQLSchema, directiveNam
           if (!validateUUID(video_id)) {
             return {
               message: 'Invalid video_id.',
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
+          const result = await resolve(source, args, Icontext, info);
+          return result;
+        };
+        return fieldConfig;
+      }
+    },
+  });
+};
+const createCommentOnVideoValidateMiddleware = (schema: GraphQLSchema, directiveName: any) => {
+  return mapSchema(schema, {
+    // Executes once for each object field definition in the schema
+    [MapperKind.OBJECT_FIELD]: (fieldConfig: any) => {
+      const deprecatedDirective = getDirective(schema, fieldConfig, directiveName)?.[0];
+      if (deprecatedDirective) {
+        // Get this field's original resolver
+        const { resolve = defaultFieldResolver } = fieldConfig;
+        fieldConfig.resolve = async function (
+          source: unknown,
+          args: IcommentCreateAttributes,
+          Icontext: any,
+          info: unknown
+        ) {
+          const { comment, video_id } = args.input;
+          logger.info(`input in createCommentOnVideoValidateMiddleware validation>>> ${JSON.stringify(args)}`);
+          await commentCreateOnVideoRule.validate({ comment, video_id });
+          if (!validateUUID(video_id)) {
+            return {
+              message: 'Invalid video_id.',
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
+          const result = await resolve(source, args, Icontext, info);
+          return result;
+        };
+        return fieldConfig;
+      }
+    },
+  });
+};
+const deleteCommentOnVideoValidateMiddleware = (schema: GraphQLSchema, directiveName: any) => {
+  return mapSchema(schema, {
+    // Executes once for each object field definition in the schema
+    [MapperKind.OBJECT_FIELD]: (fieldConfig: any) => {
+      const deprecatedDirective = getDirective(schema, fieldConfig, directiveName)?.[0];
+      if (deprecatedDirective) {
+        // Get this field's original resolver
+        const { resolve = defaultFieldResolver } = fieldConfig;
+        fieldConfig.resolve = async function (
+          source: unknown,
+          args: IcommentDeleteAttributes,
+          Icontext: any,
+          info: unknown
+        ) {
+          const { comment_id } = args.input;
+          logger.info(`input in deleteCommentOnVideoValidateMiddleware validation>>> ${JSON.stringify(args)}`);
+          await commentDeleteOnVideoRule.validate({ comment_id });
+          if (!validateUUID(comment_id)) {
+            return {
+              message: 'Invalid comment_id.',
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
+          const result = await resolve(source, args, Icontext, info);
+          return result;
+        };
+        return fieldConfig;
+      }
+    },
+  });
+};
+const updateCommentOnVideoValidateMiddleware = (schema: GraphQLSchema, directiveName: any) => {
+  return mapSchema(schema, {
+    // Executes once for each object field definition in the schema
+    [MapperKind.OBJECT_FIELD]: (fieldConfig: any) => {
+      const deprecatedDirective = getDirective(schema, fieldConfig, directiveName)?.[0];
+      if (deprecatedDirective) {
+        // Get this field's original resolver
+        const { resolve = defaultFieldResolver } = fieldConfig;
+        fieldConfig.resolve = async function (
+          source: unknown,
+          args: IcommentUpdateAttributes,
+          Icontext: any,
+          info: unknown
+        ) {
+          const { comment_id, comment } = args.input;
+          logger.info(`input in updateCommentOnVideoValidateMiddleware validation>>> ${JSON.stringify(args)}`);
+          await commentUpdateOnVideoRule.validate({ comment_id, comment });
+          if (!validateUUID(comment_id)) {
+            return {
+              message: 'Invalid comment_id.',
               status_code: HttpStatus.BAD_REQUEST,
             };
           }
@@ -354,4 +451,7 @@ export {
   videoDeleteValidateMiddleware,
   videoUpdateValidateMiddleware,
   createLikeOnVideoValidateMiddleware,
+  createCommentOnVideoValidateMiddleware,
+  deleteCommentOnVideoValidateMiddleware,
+  updateCommentOnVideoValidateMiddleware,
 };

@@ -3,3 +3,4 @@ export * from './channel.resolver';
 export * from './subscribe.resolver';
 export * from './video.resolver';
 export * from './like.resolver';
+export * from './comment.resolver';

@@ -23,3 +23,8 @@ export enum VideoTypes {
   SHORT = 'shorts',
   VIDEO = 'full_video',
 }
+
+export enum Like_types {
+  LIKE = 'like',
+  DISLIKE = 'dislike',
+}

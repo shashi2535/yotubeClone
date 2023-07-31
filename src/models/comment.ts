@@ -1,22 +1,21 @@
 import { DataTypes, Model, Sequelize } from 'sequelize';
 import { sequelizeConnection } from '../config';
-import { Like_types } from '../constant';
-import { ILikeAttributes } from '../interface';
-export type likeInput = Partial<ILikeAttributes>;
+import { ICommentAttributes } from '../interface';
+export type commentInput = Partial<ICommentAttributes>;
 
-class Like extends Model<ILikeAttributes, likeInput> implements ILikeAttributes {
+class Comment extends Model<ICommentAttributes, commentInput> implements ICommentAttributes {
   public id!: number;
+  public comment_uuid: string;
   public video_id: number;
-  public user_id: number;
-  public video_uuid?: string;
-  public reaction?: string | null;
-  public like_uuid?: string | undefined;
+  public user_id?: number | null;
+  public video_uuid?: string | null;
+  public text?: string | undefined;
   // timestamps!
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
 }
 
-Like.init(
+Comment.init(
   {
     id: {
       type: DataTypes.INTEGER.UNSIGNED,
@@ -32,11 +31,11 @@ Like.init(
     video_uuid: {
       type: DataTypes.STRING,
     },
-    like_uuid: {
+    comment_uuid: {
       type: DataTypes.UUID,
     },
-    reaction: {
-      type: DataTypes.ENUM(Like_types.LIKE, Like_types.DISLIKE),
+    text: {
+      type: DataTypes.STRING,
       defaultValue: null,
     },
     created_at: {
@@ -56,9 +55,8 @@ Like.init(
     timestamps: false,
     sequelize: sequelizeConnection,
     paranoid: true,
-    tableName: 'likes',
-    underscored: true,
-    modelName: 'Like',
+    tableName: 'comment',
+    modelName: 'Comment',
   }
 );
-export { Like };
+export { Comment };

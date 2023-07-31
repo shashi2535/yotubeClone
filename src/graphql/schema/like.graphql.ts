@@ -10,11 +10,6 @@ type:String
 type like_count{
   count:Int
 }
-type createLikeRes{
-    status_code:String
-    message:String
-}
-
 type createLikeResponse{
   status_code:Int
   message:String,
@@ -22,7 +17,7 @@ type createLikeResponse{
 }
 
 type Mutation{
-createLike(input:likeCreateReq):createLikeRes @auth @creaeLikeValid
+createLike(input:likeCreateReq):createLikeResponse @auth @creaeLikeValid
 }
 `;
 export { likeSchema };

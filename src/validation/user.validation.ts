@@ -28,6 +28,8 @@ const otp = yup
 const code = yup.string().required('code is required').min(8, 'code should have atleast 8 characters.');
 const channel_id = yup.string().required('channel_id is required');
 const video_id = yup.string().required('video_id is required');
+const comment_id = yup.string().required('comment_id is required');
+const comment = yup.string().required('comment is required').min(5, 'comment should have atleast 5 characters.');
 const title = yup.string().required('title is required').min(5, 'title should have atleast 5 characters.');
 const description = yup
   .string()
@@ -81,4 +83,18 @@ export const updateVideoRule = yup.object().shape({
 export const likeCreateOnVideoRule = yup.object().shape({
   video_id,
   type,
+});
+
+export const commentCreateOnVideoRule = yup.object().shape({
+  video_id,
+  comment,
+});
+
+export const commentDeleteOnVideoRule = yup.object().shape({
+  comment_id,
+});
+
+export const commentUpdateOnVideoRule = yup.object().shape({
+  comment_id,
+  comment,
 });

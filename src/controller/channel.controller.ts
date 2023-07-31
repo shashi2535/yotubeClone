@@ -410,3 +410,26 @@ export { channelQueryController, channelResolverController };
 //     "description":"sadfdas"
 //   }
 // }
+
+// >>>>>>>   For The Like Video  <<<<<<<<<<<<
+//  {
+//    "likeCreateReq":{
+//      "type":"dislike",
+//   "video_id":"87c714d6-a16c-44ee-ac1e-6d777ebc540d"
+//    }
+//  }
+
+// >>>>>>>   For The create comment on Video  <<<<<<<<<<<<
+//  {
+//   "createCommentReq":{
+//   "video_id":"87c714d6-a16c-44ee-ac1e-6d777ebc540d",
+//   "comment":"very good"
+//   }
+//  }
+
+// >>>>>>>   For The delete comment on Video  <<<<<<<<<<<<
+//  {
+//   "deleteCommentReq":{
+//   "comment_id":"437207d2-e796-4a8d-894e-788538af1fb1"
+//   }
+//  }

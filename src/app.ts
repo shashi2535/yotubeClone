@@ -22,6 +22,9 @@ import {
   videoDeleteValidateMiddleware,
   videoUpdateValidateMiddleware,
   createLikeOnVideoValidateMiddleware,
+  createCommentOnVideoValidateMiddleware,
+  deleteCommentOnVideoValidateMiddleware,
+  updateCommentOnVideoValidateMiddleware,
 } from './graphql';
 import { connection } from './config/';
 import http from 'http';
@@ -63,6 +66,10 @@ const expressServer = async () => {
     resolvers,
   });
   // new midleware is priority first for calling
+
+  schema = updateCommentOnVideoValidateMiddleware(schema, 'updateCommentValid');
+  schema = deleteCommentOnVideoValidateMiddleware(schema, 'deleteCommentValid');
+  schema = createCommentOnVideoValidateMiddleware(schema, 'createCommentValid');
   schema = createLikeOnVideoValidateMiddleware(schema, 'creaeLikeValid');
   schema = videoUpdateValidateMiddleware(schema, 'videoUpdateValid');
   schema = videoDeleteValidateMiddleware(schema, 'videoDeleteValid');
