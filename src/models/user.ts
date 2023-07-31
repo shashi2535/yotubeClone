@@ -3,7 +3,10 @@ import { sequelizeConnection } from '../config';
 import { IUserAttributes } from '../interface';
 import { Avtar } from './avtar';
 import { Channel } from './channel';
+import { Comment } from './comment';
+import { Like } from './like';
 import { Subscribe } from './subscribe';
+import { Video } from './video';
 
 export type UserInput = Optional<IUserAttributes, 'id'>;
 
@@ -115,4 +118,13 @@ Channel.belongsTo(User), { foreignKey: 'UserId', as: 'User' };
 
 User.hasOne(Subscribe, { foreignKey: 'subscribed_user_id', as: 'Subscribe' });
 Subscribe.belongsTo(User, { foreignKey: 'subscribed_user_id' });
+
+User.hasOne(Video, { foreignKey: 'user_id', as: 'Video' });
+Video.belongsTo(User, { foreignKey: 'user_id' });
+
+User.hasOne(Like, { foreignKey: 'user_id', as: 'Like' });
+Like.belongsTo(User, { foreignKey: 'user_id' });
+
+User.hasOne(Comment, { foreignKey: 'user_id', as: 'User_Comment' });
+Comment.belongsTo(User, { foreignKey: 'user_id', as: 'User_Comment' });
 export { User };

@@ -56,8 +56,5 @@ Subscribe.init(
     modelName: 'Subscribe',
   }
 );
-// Channel.hasOne(Avtar, { foreignKey: 'channel_id', as: 'Avtar' });
-// Avtar.belongsTo(Channel, { foreignKey: 'channel_id' });
-// Avtar.belongsTo(User);
 
 export { Subscribe };

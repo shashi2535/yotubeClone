@@ -14,7 +14,6 @@ class Comment extends Model<ICommentAttributes, commentInput> implements ICommen
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
 }
-
 Comment.init(
   {
     id: {

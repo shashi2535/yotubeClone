@@ -2,7 +2,8 @@ import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
 import { sequelizeConnection } from '../config';
 import { VideoTypes } from '../constant';
 import { IVideoAttributes } from '../interface/';
-
+import { Like } from './like';
+import { Comment } from './comment';
 export type videoInput = Optional<IVideoAttributes, 'id'>;
 
 class Video extends Model<IVideoAttributes, videoInput> implements IVideoAttributes {
@@ -77,8 +78,9 @@ Video.init(
     modelName: 'Video',
   }
 );
-// Channel.hasOne(Avtar, { foreignKey: 'channel_id', as: 'Avtar' });
-// Avtar.belongsTo(Channel, { foreignKey: 'channel_id' });
-// Avtar.belongsTo(User);
+Video.hasOne(Like, { foreignKey: 'video_id', as: 'Video' });
+Like.belongsTo(Video, { foreignKey: 'video_id' });
 
+Video.hasOne(Comment, { foreignKey: 'video_id', as: 'Comment_Video' });
+Comment.belongsTo(Video, { foreignKey: 'video_id', as: 'Comment_Video' });
 export { Video };

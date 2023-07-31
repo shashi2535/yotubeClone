@@ -3,6 +3,7 @@ import { sequelizeConnection } from '../config';
 import { IchannelAttributes } from '../interface/';
 import { Avtar } from './avtar';
 import { Subscribe } from './subscribe';
+import { Video } from './video';
 
 export type channelInput = Optional<IchannelAttributes, 'id'>;
 
@@ -70,6 +71,9 @@ Avtar.belongsTo(Channel, { foreignKey: 'channel_id' });
 
 Channel.hasOne(Subscribe, { foreignKey: 'subscribed_channel_id', as: 'Subscribe' });
 Subscribe.belongsTo(Channel, { foreignKey: 'subscribed_channel_id' });
+
+Channel.hasOne(Video, { foreignKey: 'channel_id', as: 'Video' });
+Video.belongsTo(Channel, { foreignKey: 'channel_id' });
 // Avtar.belongsTo(User);
 
 export { Channel };

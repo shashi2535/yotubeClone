@@ -433,3 +433,11 @@ export { channelQueryController, channelResolverController };
 //   "comment_id":"437207d2-e796-4a8d-894e-788538af1fb1"
 //   }
 //  }
+
+// >>>>>>>   For The update comment on Video  <<<<<<<<<<<<
+//  {
+//   "updateCommentReq":{
+//   "comment_id":"a1373d2b-56f9-4ae0-9312-e45498220c9c",
+//     "comment":"very good updated"
+//   }
+//  }

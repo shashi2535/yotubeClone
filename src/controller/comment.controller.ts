@@ -1,8 +1,14 @@
 import { Op } from 'sequelize';
 import { logger } from '../config';
 import { HttpStatus } from '../constant';
-import { IcommentCreateAttributes, IcommentDeleteAttributes, IcommentUpdateAttributes, Icontext } from '../interface';
-import { Comment, Video } from '../models';
+import {
+  IcommentCreateAttributes,
+  IcommentDeleteAttributes,
+  IcommentUpdateAttributes,
+  Icontext,
+  IdeleteVideo,
+} from '../interface';
+import { Comment, User, Video } from '../models';
 import { generateUUID } from '../utils';
 
 const commentResolverController = {
@@ -122,6 +128,28 @@ const commentResolverController = {
     };
   },
 };
-const commentQueryController = {};
+const commentQueryController = {
+  getCommentByVideoId: async (parent: unknown, input: IdeleteVideo, context: Icontext) => {
+    try {
+      const { video_id } = input;
+      const comment = await Comment.findAll({
+        where: { video_uuid: video_id },
+        raw: true,
+        nest: true,
+        include: [{ model: User, as: 'User_Comment', attributes: ['email', 'first_name', 'last_name'] }],
+      });
+      return {
+        status_code: HttpStatus.OK,
+        message: 'Comment Added Successfully.',
+        data: comment,
+      };
+    } catch (err: any) {
+      return {
+        status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: err.message,
+      };
+    }
+  },
+};
 
 export { commentResolverController, commentQueryController };
