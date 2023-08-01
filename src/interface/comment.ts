@@ -1,3 +1,5 @@
+import { IVideoAttributes } from './video';
+
 interface ICommentAttributes {
   id: number;
   comment_uuid: string;
@@ -7,6 +9,7 @@ interface ICommentAttributes {
   text?: string | null;
   created_at?: Date;
   updated_at?: Date;
+  Comment_Video?: IVideoAttributes;
 }
 
 interface IcommentCreateAttributes {

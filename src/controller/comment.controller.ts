@@ -9,6 +9,7 @@ import {
   IdeleteVideo,
 } from '../interface';
 import { Comment, User, Video } from '../models';
+import { Sub_Comment } from '../models/sub_comment';
 import { generateUUID } from '../utils';
 
 const commentResolverController = {
@@ -132,12 +133,21 @@ const commentQueryController = {
   getCommentByVideoId: async (parent: unknown, input: IdeleteVideo, context: Icontext) => {
     try {
       const { video_id } = input;
-      const comment = await Comment.findAll({
+      const comment: any = await Comment.findAll({
         where: { video_uuid: video_id },
         raw: true,
         nest: true,
         include: [{ model: User, as: 'User_Comment', attributes: ['email', 'first_name', 'last_name'] }],
       });
+      // const arr: any = [];
+      const data = await Promise.all(
+        comment.map(async (element: any) => {
+          const count = await Sub_Comment.count({ where: { comment_id: element.id } });
+          element.count = count;
+          return element;
+          // arr.push(element);
+        })
+      );
       return {
         status_code: HttpStatus.OK,
         message: 'Comment Added Successfully.',

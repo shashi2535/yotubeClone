@@ -1,42 +1,36 @@
 import { DataTypes, Model, Sequelize } from 'sequelize';
 import { sequelizeConnection } from '../config';
-import { ICommentAttributes } from '../interface';
-import { Sub_Comment } from './sub_comment';
-export type commentInput = Partial<ICommentAttributes>;
+import { ISubCommentAttributes } from '../interface';
+export type subCommentInput = Partial<ISubCommentAttributes>;
 
-class Comment extends Model<ICommentAttributes, commentInput> implements ICommentAttributes {
+class Sub_Comment extends Model<ISubCommentAttributes, subCommentInput> implements ISubCommentAttributes {
   public id!: number;
-  public comment_uuid: string;
-  public video_id: number;
-  public user_id?: number | null;
-  public video_uuid?: string | null;
-  public text?: string | undefined;
+  public comment_id: number;
+  public sub_comment_uuid: string;
+  public sub_comment: string;
+  public user_id: number;
   // timestamps!
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
 }
-Comment.init(
+Sub_Comment.init(
   {
     id: {
       type: DataTypes.INTEGER.UNSIGNED,
       autoIncrement: true,
       primaryKey: true,
     },
-    video_id: {
+    comment_id: {
       type: DataTypes.INTEGER,
     },
     user_id: {
       type: DataTypes.INTEGER,
     },
-    video_uuid: {
-      type: DataTypes.STRING,
-    },
-    comment_uuid: {
+    sub_comment_uuid: {
       type: DataTypes.UUID,
     },
-    text: {
+    sub_comment: {
       type: DataTypes.STRING,
-      defaultValue: null,
     },
     created_at: {
       type: DataTypes.DATE,
@@ -55,12 +49,8 @@ Comment.init(
     timestamps: false,
     sequelize: sequelizeConnection,
     paranoid: true,
-    tableName: 'comment',
-    modelName: 'Comment',
+    tableName: 'sub_comment',
+    modelName: 'Sub_Comment',
   }
 );
-
-Comment.hasOne(Sub_Comment, { foreignKey: 'comment_id', as: 'Comment' });
-Sub_Comment.belongsTo(Comment, { foreignKey: 'comment_id', as: 'Comment' });
-
-export { Comment };
+export { Sub_Comment };

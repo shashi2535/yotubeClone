@@ -36,6 +36,7 @@ const description = yup
   .required('description is required')
   .min(5, 'description should have atleast 5 characters.');
 const type = yup.string().required('type is required').oneOf(['like', 'dislike']);
+const sub_comment_id = yup.string().required('sub_comment_id is required');
 
 export const UserRegisterationRules = yup.object().shape({
   password,
@@ -97,4 +98,13 @@ export const commentDeleteOnVideoRule = yup.object().shape({
 export const commentUpdateOnVideoRule = yup.object().shape({
   comment_id,
   comment,
+});
+
+export const subCommentUpdateOnVideoRule = yup.object().shape({
+  sub_comment_id,
+  comment,
+});
+
+export const subCommentdeleteOnVideoRule = yup.object().shape({
+  sub_comment_id,
 });

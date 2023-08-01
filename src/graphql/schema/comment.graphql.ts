@@ -35,10 +35,11 @@ last_name:String
 type getcomentResponse{
   comment_uuid:String
   video_uuid:String
-  comment:String
+  text:String
   created_at:String
   updated_at:String
   User_Comment:user_comment
+  count:Int
 }
 type createCommentResponse{
   status_code:Int

@@ -1,4 +1,12 @@
-import { userSchema, channelSchema, subScribeSchema, videoSchema, likeSchema, commentSchema } from './schema/';
+import {
+  userSchema,
+  channelSchema,
+  subScribeSchema,
+  videoSchema,
+  likeSchema,
+  commentSchema,
+  subCommentSchema,
+} from './schema/';
 import {
   userResolver,
   ChannelResolver,
@@ -6,6 +14,7 @@ import {
   VideoResolver,
   likeResolver,
   commentResolver,
+  subCommentResolver,
 } from './resolver';
 import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge';
 import {
@@ -25,8 +34,18 @@ import {
   createCommentOnVideoValidateMiddleware,
   deleteCommentOnVideoValidateMiddleware,
   updateCommentOnVideoValidateMiddleware,
+  updateSubCommentOnVideoValidateMiddleware,
+  deleteSubCommentOnVideoValidateMiddleware,
 } from './directives/';
-const typedef = mergeTypeDefs([userSchema, channelSchema, subScribeSchema, videoSchema, likeSchema, commentSchema]);
+const typedef = mergeTypeDefs([
+  userSchema,
+  channelSchema,
+  subScribeSchema,
+  videoSchema,
+  likeSchema,
+  commentSchema,
+  subCommentSchema,
+]);
 const resolvers = mergeResolvers([
   userResolver,
   ChannelResolver,
@@ -34,6 +53,7 @@ const resolvers = mergeResolvers([
   VideoResolver,
   likeResolver,
   commentResolver,
+  subCommentResolver,
 ]);
 export {
   resolvers,
@@ -54,4 +74,6 @@ export {
   createCommentOnVideoValidateMiddleware,
   deleteCommentOnVideoValidateMiddleware,
   updateCommentOnVideoValidateMiddleware,
+  updateSubCommentOnVideoValidateMiddleware,
+  deleteSubCommentOnVideoValidateMiddleware,
 };
