@@ -2,25 +2,9 @@ import { logger } from '../config';
 import { HttpStatus } from '../constant';
 import { Icontext, IcreateChannel, IchannelAttributes, IdeleteChannel, IupdateChannel } from '../interface/';
 import { User, Channel, Avtar, Subscribe } from '../models';
-import { generateUUID, picUpdatedInCloudinary, picUploadInCloudinary } from '../utils';
-import { createWriteStream } from 'fs';
-import { join } from 'path';
-import { tmpdir } from 'os';
+import { generateUUID, picStoreInTmpFolder, picUpdatedInCloudinary, picUploadInCloudinary } from '../utils';
 import i18next from 'i18next';
 
-const processUpload = async (upload: any) => {
-  const { createReadStream, filename, mimetype } = await upload;
-  const stream = createReadStream();
-  const id = Date.now();
-  const path = `${join(tmpdir())}/${id}${filename.replace(/ /g, '')}`;
-  const file = new Promise((resolve, reject) =>
-    stream
-      .pipe(createWriteStream(path))
-      .on('finish', () => resolve({ path, filename, mimetype }))
-      .on('error', reject)
-  );
-  return file;
-};
 const channelResolverController = {
   createChannel: async (parent: unknown, input: IcreateChannel, Icontext: Icontext) => {
     try {
@@ -58,7 +42,7 @@ const channelResolverController = {
         };
       } else {
         logger.info('both body and file');
-        const upload: any = await processUpload(profile_picture);
+        const upload: any = await picStoreInTmpFolder(profile_picture);
         const data = await picUploadInCloudinary(upload.path);
         const channelCreateData = await Channel.create({
           handle,
@@ -110,7 +94,7 @@ const channelResolverController = {
       if (!channelData) {
         return {
           message: i18next.t('STATUS.CHANNEL_NOT_FOUND'),
-          status_code: 400,
+          status_code: HttpStatus.BAD_REQUEST,
         };
       }
       logger.info(JSON.stringify(input));
@@ -131,7 +115,7 @@ const channelResolverController = {
           include: [{ model: Avtar, attributes: ['avtar_url'], as: 'Avtar' }],
         })) as any;
         return {
-          status_code: 200,
+          status_code: HttpStatus.OK,
           message: i18next.t('STATUS.CHANNEL_UPDATED_SUCCESSFULLY'),
           data: {
             handle: updatedChanelData?.handle,
@@ -146,7 +130,7 @@ const channelResolverController = {
       } else if (profile_picture && !channel_name && !handle) {
         logger.info('only profile pic');
 
-        const upload: any = await processUpload(profile_picture);
+        const upload: any = await picStoreInTmpFolder(profile_picture);
         const data = await picUpdatedInCloudinary(String(channelData.Avtar?.public_id), upload.path);
         await Avtar.update(
           { avtar_url: data.url, public_id: data.public_id },
@@ -164,7 +148,7 @@ const channelResolverController = {
         })) as any;
 
         return {
-          status_code: 200,
+          status_code: HttpStatus.OK,
           message: i18next.t('STATUS.CHANNEL_UPDATED_SUCCESSFULLY'),
           data: {
             handle: updatedChanelData?.handle,
@@ -178,7 +162,7 @@ const channelResolverController = {
         };
       } else {
         logger.info('both body and file');
-        const upload: any = await processUpload(profile_picture);
+        const upload: any = await picStoreInTmpFolder(profile_picture);
         const data = await picUpdatedInCloudinary(String(channelData.Avtar?.public_id), upload.path);
         await Avtar.update(
           { avtar_url: data.url, public_id: data.public_id },
@@ -202,7 +186,7 @@ const channelResolverController = {
           },
         });
         return {
-          status_code: 200,
+          status_code: HttpStatus.OK,
           message: i18next.t('STATUS.CHANNEL_UPDATED_SUCCESSFULLY'),
           data: {
             handle: updatedChanelData?.handle,
@@ -224,29 +208,38 @@ const channelResolverController = {
     }
   },
   deleteChannel: async (paraent: unknown, input: IdeleteChannel, context: Icontext) => {
-    const { userId, user_uuid } = context;
-    logger.info(`in delete channel ${userId}`);
-    const channelData = await Channel.findOne({ where: { UserId: userId }, raw: true, nest: true });
-    if (!channelData) {
+    try {
+      const { userId, user_uuid } = context;
+      logger.info(`in delete channel ${userId}`);
+      const channelData = await Channel.findOne({ where: { UserId: userId }, raw: true, nest: true });
+      if (!channelData) {
+        return {
+          message: i18next.t('STATUS.CHANNEL_NOT_FOUND'),
+          status_code: HttpStatus.BAD_REQUEST,
+        };
+      }
+      await Channel.destroy({ where: { UserId: userId } });
+      await Avtar.destroy({ where: { channel_id: channelData.id } });
       return {
-        message: i18next.t('STATUS.CHANNEL_NOT_FOUND'),
-        status_code: HttpStatus.BAD_REQUEST,
+        status_code: HttpStatus.OK,
+        message: i18next.t('STATUS.CHANNEL_DELETED_SUCCESSFULLY'),
+        data: {
+          handle: channelData?.handle,
+          chanel_uuid: channelData?.chanel_uuid,
+          channel_name: channelData?.channel_name,
+          UserId: user_uuid,
+          created_at: channelData?.created_at,
+          updated_at: channelData?.updated_at,
+        },
       };
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          message: err.message,
+          status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        };
+      }
     }
-    await Channel.destroy({ where: { UserId: userId } });
-    await Avtar.destroy({ where: { channel_id: channelData.id } });
-    return {
-      status_code: HttpStatus.OK,
-      message: i18next.t('STATUS.CHANNEL_DELETED_SUCCESSFULLY'),
-      data: {
-        handle: channelData?.handle,
-        chanel_uuid: channelData?.chanel_uuid,
-        channel_name: channelData?.channel_name,
-        UserId: user_uuid,
-        created_at: channelData?.created_at,
-        updated_at: channelData?.updated_at,
-      },
-    };
   },
   verifiedChannelByAdmin: async (paraent: unknown, input: IupdateChannel, context: Icontext) => {
     try {

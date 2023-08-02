@@ -27,6 +27,7 @@ import {
   updateCommentOnVideoValidateMiddleware,
   deleteSubCommentOnVideoValidateMiddleware,
   updateSubCommentOnVideoValidateMiddleware,
+  createLikeOnCommentValidateMiddleware,
 } from './graphql';
 import { connection } from './config/';
 import http from 'http';
@@ -68,6 +69,7 @@ const expressServer = async () => {
     resolvers,
   });
   // new midleware is priority first for calling
+  schema = createLikeOnCommentValidateMiddleware(schema, 'createLikeOnCommentValid');
   schema = deleteSubCommentOnVideoValidateMiddleware(schema, 'deleteSubCommentValid');
   schema = updateSubCommentOnVideoValidateMiddleware(schema, 'updateSubCommentValid');
   schema = updateCommentOnVideoValidateMiddleware(schema, 'updateCommentValid');

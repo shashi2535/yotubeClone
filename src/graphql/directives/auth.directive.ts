@@ -1,5 +1,5 @@
 import { defaultFieldResolver, GraphQLSchema } from 'graphql';
-import { HttpStatus } from '../../constant';
+import { HttpStatus, MIME_TYPE } from '../../constant';
 import { mapSchema, getDirective, MapperKind } from '@graphql-tools/utils';
 import { logger } from '../../config';
 import {
@@ -18,6 +18,7 @@ import {
   commentUpdateOnVideoRule,
   subCommentUpdateOnVideoRule,
   subCommentdeleteOnVideoRule,
+  likeCreateOnCommentRule,
 } from '../../validation';
 import {
   IloginInput,
@@ -33,6 +34,7 @@ import {
   IcommentUpdateAttributes,
   IUpdateSubComment,
   IDeleteSubComment,
+  ILikeOnComment,
 } from '../../interface';
 import i18next from 'i18next';
 import { validateUUID } from '../../utils';
@@ -76,7 +78,7 @@ const imageValidation = (schema: GraphQLSchema, directiveName: any) => {
           const file = await args?.profile_picture;
           // logger.info('image validation', JSON.stringify(file));
           if (file) {
-            if (file.mimetype !== 'image/png') {
+            if (file.mimetype !== MIME_TYPE.FOR_IMAGE) {
               return {
                 status_code: HttpStatus.BAD_REQUEST,
                 message: i18next.t('STATUS.ONLY_IMAGE_ALLOW'),
@@ -230,7 +232,7 @@ const videoValidation = (schema: GraphQLSchema, directiveName: any) => {
           const { description, title } = args.input;
           await verifiedCreateVideoRule.validate({ description, title });
           if (file) {
-            if (file?.mimetype !== 'video/mp4') {
+            if (file?.mimetype !== MIME_TYPE.FOR_VIDEO) {
               return {
                 status_code: HttpStatus.BAD_REQUEST,
                 message: i18next.t('STATUS.ONLY_VIDEO_ALLOWED'),
@@ -257,7 +259,7 @@ const verifiedChannelByAdminValidateMiddleware = (schema: GraphQLSchema, directi
           await verifiedChannelByAdminRule.validate(args);
           if (!validateUUID(args.channel_id)) {
             return {
-              message: 'Invalid Channel Id.',
+              message: i18next.t('STATUS.IVALID_CHANNEL_ID'),
               status_code: HttpStatus.BAD_REQUEST,
             };
           }
@@ -282,7 +284,7 @@ const videoDeleteValidateMiddleware = (schema: GraphQLSchema, directiveName: any
           await videoUpdateRule.validate(args);
           if (!validateUUID(args.video_id)) {
             return {
-              message: 'Invalid video_id.',
+              message: i18next.t('STATUS.INVALID_VIDEO_ID'),
               status_code: HttpStatus.BAD_REQUEST,
             };
           }
@@ -308,7 +310,7 @@ const videoUpdateValidateMiddleware = (schema: GraphQLSchema, directiveName: any
           await updateVideoRule.validate({ description, title, video_id });
           if (!validateUUID(video_id)) {
             return {
-              message: 'Invalid video_id.',
+              message: i18next.t('STATUS.INVALID_VIDEO_ID'),
               status_code: HttpStatus.BAD_REQUEST,
             };
           }
@@ -334,7 +336,7 @@ const createLikeOnVideoValidateMiddleware = (schema: GraphQLSchema, directiveNam
           await likeCreateOnVideoRule.validate({ type, video_id });
           if (!validateUUID(video_id)) {
             return {
-              message: 'Invalid video_id.',
+              message: i18next.t('STATUS.INVALID_VIDEO_ID'),
               status_code: HttpStatus.BAD_REQUEST,
             };
           }
@@ -365,7 +367,7 @@ const createCommentOnVideoValidateMiddleware = (schema: GraphQLSchema, directive
           await commentCreateOnVideoRule.validate({ comment, video_id });
           if (!validateUUID(video_id)) {
             return {
-              message: 'Invalid video_id.',
+              message: i18next.t('STATUS.INVALID_VIDEO_ID'),
               status_code: HttpStatus.BAD_REQUEST,
             };
           }
@@ -396,7 +398,7 @@ const deleteCommentOnVideoValidateMiddleware = (schema: GraphQLSchema, directive
           await commentDeleteOnVideoRule.validate({ comment_id });
           if (!validateUUID(comment_id)) {
             return {
-              message: 'Invalid comment_id.',
+              message: i18next.t('STATUS.INVALID_COMMENT_ID'),
               status_code: HttpStatus.BAD_REQUEST,
             };
           }
@@ -427,7 +429,7 @@ const updateCommentOnVideoValidateMiddleware = (schema: GraphQLSchema, directive
           await commentUpdateOnVideoRule.validate({ comment_id, comment });
           if (!validateUUID(comment_id)) {
             return {
-              message: 'Invalid comment_id.',
+              message: i18next.t('STATUS.INVALID_COMMENT_ID'),
               status_code: HttpStatus.BAD_REQUEST,
             };
           }
@@ -453,7 +455,7 @@ const updateSubCommentOnVideoValidateMiddleware = (schema: GraphQLSchema, direct
           await subCommentUpdateOnVideoRule.validate({ sub_comment_id, comment });
           if (!validateUUID(sub_comment_id)) {
             return {
-              message: 'Invalid sub_comment_id.',
+              message: i18next.t('STATUS.INVALID_SUB_COMMENT_ID'),
               status_code: HttpStatus.BAD_REQUEST,
             };
           }
@@ -479,7 +481,33 @@ const deleteSubCommentOnVideoValidateMiddleware = (schema: GraphQLSchema, direct
           await subCommentdeleteOnVideoRule.validate({ sub_comment_id });
           if (!validateUUID(sub_comment_id)) {
             return {
-              message: 'Invalid sub_comment_id.',
+              message: i18next.t('STATUS.INVALID_SUB_COMMENT_ID'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
+          const result = await resolve(source, args, Icontext, info);
+          return result;
+        };
+        return fieldConfig;
+      }
+    },
+  });
+};
+const createLikeOnCommentValidateMiddleware = (schema: GraphQLSchema, directiveName: any) => {
+  return mapSchema(schema, {
+    // Executes once for each object field definition in the schema
+    [MapperKind.OBJECT_FIELD]: (fieldConfig: any) => {
+      const deprecatedDirective = getDirective(schema, fieldConfig, directiveName)?.[0];
+      if (deprecatedDirective) {
+        // Get this field's original resolver
+        const { resolve = defaultFieldResolver } = fieldConfig;
+        fieldConfig.resolve = async function (source: unknown, args: ILikeOnComment, Icontext: any, info: unknown) {
+          const { type, comment_id } = args.input;
+          logger.info(`input in createLikeOnVideoValidateMiddleware validation>>> ${JSON.stringify(args)}`);
+          await likeCreateOnCommentRule.validate({ type, comment_id });
+          if (!validateUUID(comment_id)) {
+            return {
+              message: i18next.t('STATUS.INVALID_COMMENT_ID'),
               status_code: HttpStatus.BAD_REQUEST,
             };
           }
@@ -511,4 +539,5 @@ export {
   updateCommentOnVideoValidateMiddleware,
   updateSubCommentOnVideoValidateMiddleware,
   deleteSubCommentOnVideoValidateMiddleware,
+  createLikeOnCommentValidateMiddleware,
 };

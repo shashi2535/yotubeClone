@@ -2,6 +2,7 @@ interface ILikeAttributes {
   id: number;
   video_id: number;
   user_id: number;
+  comment_id?: number | null;
   reaction?: string | null;
   video_uuid?: string | null;
   like_uuid?: string | undefined;

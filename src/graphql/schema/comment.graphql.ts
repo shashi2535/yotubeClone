@@ -5,6 +5,8 @@ directive @createCommentValid on FIELD_DEFINITION
 directive @deleteCommentValid on FIELD_DEFINITION
 directive @updateCommentValid on FIELD_DEFINITION
 directive @videoDeleteValid on FIELD_DEFINITION
+directive @createLikeOnCommentValid on FIELD_DEFINITION
+
 input createCommentReq{
   video_id:String
   comment:String
@@ -18,6 +20,10 @@ input getCommentReq{
 input updateCommentReq{
   comment:String
   comment_id:String
+}
+input likeOnCommentReq{
+  comment_id:String
+  type:String
 }
 type comentRes{
   comment_uuid:String
@@ -60,6 +66,7 @@ type Mutation{
 createComment(input:createCommentReq):createCommentResponse @auth  @createCommentValid
 deleteComment(input:deleteCommentReq):deleteCommentResponse @auth  @deleteCommentValid
 updateComment(input:updateCommentReq):createCommentResponse @auth  @updateCommentValid
+likeOnComment(input:likeOnCommentReq):createLikeResponse @auth @createLikeOnCommentValid
 }
 
 type Query{

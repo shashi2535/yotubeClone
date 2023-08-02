@@ -28,3 +28,8 @@ export enum Like_types {
   LIKE = 'like',
   DISLIKE = 'dislike',
 }
+
+export enum MIME_TYPE {
+  FOR_VIDEO = 'video/mp4',
+  FOR_IMAGE = 'image/png',
+}

@@ -5,6 +5,7 @@ import { v4 as uuidv4, validate as isValidUUID } from 'uuid';
 import { v2 as cloudinary } from 'cloudinary';
 import crypto from 'crypto';
 import { tmpdir } from 'os';
+import { join } from 'path';
 import { createWriteStream } from 'fs';
 export const generateOtp = () => 100000 + Math.floor(Math.random() * 900000);
 const {
@@ -65,6 +66,19 @@ export const validateUUID = (uuid: string) => {
   } else {
     return true;
   }
+};
+export const picStoreInTmpFolder = async (upload: any) => {
+  const { createReadStream, filename, mimetype } = await upload;
+  const stream = createReadStream();
+  const id = Date.now();
+  const path = `${join(tmpdir())}/${id}${filename.replace(/ /g, '')}`;
+  const file = new Promise((resolve, reject) =>
+    stream
+      .pipe(createWriteStream(path))
+      .on('finish', () => resolve({ path, filename, mimetype }))
+      .on('error', reject)
+  );
+  return file;
 };
 
 export const picUploadInCloudinary = async (path: string) => {

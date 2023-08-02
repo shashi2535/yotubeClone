@@ -1,6 +1,4 @@
 import i18next from 'i18next';
-import { Op } from 'sequelize';
-import { logger } from '../config';
 import { HttpStatus, VideoTypes } from '../constant';
 import { Icontext, ICreateVideo, IdeleteVideo, IUpdateVideo } from '../interface';
 import { Channel, Video } from '../models';
@@ -58,95 +56,131 @@ const videoResolverController = {
           description: videoCreateData.dataValues.description,
         },
       };
-    } catch (err: any) {
-      throw new Error(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          message: err.message,
+          status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        };
+      }
     }
   },
   deleteVideo: async (parent: unknown, input: IdeleteVideo, context: Icontext) => {
-    const { video_id } = input;
-    const { userId } = context;
-    const videoData = await Video.findOne({ where: { video_uuid: video_id, user_id: userId }, raw: true, nest: true });
-    // logger.info(`in delete video controller ${JSON.stringify(videoData)}`);
-    if (!videoData) {
+    try {
+      const { video_id } = input;
+      const { userId } = context;
+      const videoData = await Video.findOne({
+        where: { video_uuid: video_id, user_id: userId },
+        raw: true,
+        nest: true,
+      });
+      if (!videoData) {
+        return {
+          message: i18next.t('STATUS.VIDEO_NOT_FOUND'),
+          status_code: HttpStatus.BAD_REQUEST,
+        };
+      }
+      await videoDeleteInCloudinary(`${videoData?.public_id}`);
+      await Video.destroy({ where: { video_uuid: video_id } });
       return {
-        message: 'Video Not Found',
-        status_code: HttpStatus.BAD_REQUEST,
+        message: i18next.t('STATUS.VIDEO_DELETED_SUCCESSFULLY'),
+        status_code: HttpStatus.OK,
       };
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          message: err.message,
+          status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        };
+      }
     }
-    await videoDeleteInCloudinary(`${videoData?.public_id}`);
-    await Video.destroy({ where: { video_uuid: video_id } });
-    return {
-      message: 'Video Deleted Successfully.',
-      status_code: HttpStatus.OK,
-    };
   },
   updateVideo: async (parent: unknown, input: IUpdateVideo, context: Icontext) => {
-    const { description, title, video_id } = input.input;
-    const { userId } = context;
-    const videoData = await Video.findOne({
-      where: {
-        video_uuid: video_id,
-        user_id: userId,
-      },
-      raw: true,
-      nest: true,
-    });
-    if (!videoData) {
+    try {
+      const { description, title, video_id } = input.input;
+      const { userId } = context;
+      const videoData = await Video.findOne({
+        where: {
+          video_uuid: video_id,
+          user_id: userId,
+        },
+        raw: true,
+        nest: true,
+      });
+      if (!videoData) {
+        return {
+          message: i18next.t('STATUS.VIDEO_NOT_FOUND'),
+          status_code: HttpStatus.BAD_REQUEST,
+        };
+      }
+      await Video.update(
+        {
+          title,
+          description,
+        },
+        { where: { video_uuid: video_id } }
+      );
+
       return {
-        message: 'Video Not Found.',
-        status_code: HttpStatus.BAD_REQUEST,
+        message: i18next.t('STATUS.VIDEO_UPDATED_SUCCESSFULLY'),
+        status_code: HttpStatus.OK,
+        data: {
+          video_uuid: videoData.dataValues.video_uuid,
+          url: videoData.dataValues.video_url,
+          created_at: videoData.dataValues.created_at,
+          updated_at: videoData.dataValues.updated_at,
+          type: videoData.dataValues.type,
+          title: title,
+          description: description,
+        },
       };
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          message: err.message,
+          status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        };
+      }
     }
-    await Video.update(
-      {
-        title,
-        description,
-      },
-      { where: { video_uuid: video_id } }
-    );
-    return {
-      message: 'Video Updated Successfully.',
-      status_code: HttpStatus.OK,
-      data: {
-        video_uuid: videoData.dataValues.video_uuid,
-        url: videoData.dataValues.video_url,
-        created_at: videoData.dataValues.created_at,
-        updated_at: videoData.dataValues.updated_at,
-        type: videoData.dataValues.type,
-        title: title,
-        description: description,
-      },
-    };
   },
   update_video_view: async (parent: unknown, input: IdeleteVideo, context: Icontext) => {
-    const { userId } = context;
-    const { video_id } = input;
-    const videoData = await Video.findOne({ where: { video_uuid: video_id }, raw: true, nest: true });
-    if (!videoData) {
-      return {
-        message: 'Video Not Found',
-        status_code: HttpStatus.BAD_REQUEST,
-        data: null,
-      };
-    }
-    if (videoData.user_id === userId) {
-      return {
-        message: 'Video Not Found',
-        status_code: HttpStatus.BAD_REQUEST,
-        data: {
-          video_view: videoData.video_view,
-        },
-      };
-    } else {
-      await Video.update({ video_view: Number(videoData?.video_view) + 1 }, { where: { video_uuid: video_id } });
-      const updatedVideoData = await Video.findOne({ where: { video_uuid: video_id }, raw: true, nest: true });
-      return {
-        message: 'Video Not Found',
-        status_code: HttpStatus.BAD_REQUEST,
-        data: {
-          video_view: updatedVideoData?.video_view,
-        },
-      };
+    try {
+      const { userId } = context;
+      const { video_id } = input;
+      const videoData = await Video.findOne({ where: { video_uuid: video_id }, raw: true, nest: true });
+      if (!videoData) {
+        return {
+          message: i18next.t('STATUS.VIDEO_NOT_FOUND'),
+          status_code: HttpStatus.BAD_REQUEST,
+          data: null,
+        };
+      }
+      if (videoData.user_id === userId) {
+        return {
+          message: i18next.t('STATUS.VIDEO_VIEW_NOT_UPDATED'),
+          status_code: HttpStatus.BAD_REQUEST,
+          data: {
+            video_view: videoData.video_view,
+          },
+        };
+      } else {
+        await Video.update({ video_view: Number(videoData?.video_view) + 1 }, { where: { video_uuid: video_id } });
+        const updatedVideoData = await Video.findOne({ where: { video_uuid: video_id }, raw: true, nest: true });
+        return {
+          message: i18next.t('STATUS.VIDEO_VIEW_UPDATED_SUCCESSFULLY'),
+          status_code: HttpStatus.OK,
+          data: {
+            video_view: updatedVideoData?.video_view,
+          },
+        };
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          message: err.message,
+          status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        };
+      }
     }
   },
 };

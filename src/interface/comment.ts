@@ -29,5 +29,17 @@ interface IcommentUpdateAttributes {
     comment: string;
   };
 }
+interface ILikeOnComment {
+  input: {
+    comment_id: string;
+    type: string;
+  };
+}
 
-export { ICommentAttributes, IcommentCreateAttributes, IcommentDeleteAttributes, IcommentUpdateAttributes };
+export {
+  ICommentAttributes,
+  IcommentCreateAttributes,
+  IcommentDeleteAttributes,
+  IcommentUpdateAttributes,
+  ILikeOnComment,
+};

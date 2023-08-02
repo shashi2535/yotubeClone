@@ -36,6 +36,7 @@ import {
   updateCommentOnVideoValidateMiddleware,
   updateSubCommentOnVideoValidateMiddleware,
   deleteSubCommentOnVideoValidateMiddleware,
+  createLikeOnCommentValidateMiddleware,
 } from './directives/';
 const typedef = mergeTypeDefs([
   userSchema,
@@ -76,4 +77,5 @@ export {
   updateCommentOnVideoValidateMiddleware,
   updateSubCommentOnVideoValidateMiddleware,
   deleteSubCommentOnVideoValidateMiddleware,
+  createLikeOnCommentValidateMiddleware,
 };

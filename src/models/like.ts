@@ -8,6 +8,7 @@ class Like extends Model<ILikeAttributes, likeInput> implements ILikeAttributes 
   public id!: number;
   public video_id: number;
   public user_id: number;
+  public comment_id: number;
   public video_uuid?: string;
   public reaction?: string | null;
   public like_uuid?: string | undefined;
@@ -25,8 +26,13 @@ Like.init(
     },
     video_id: {
       type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: null,
     },
     user_id: {
+      type: DataTypes.INTEGER,
+    },
+    comment_id: {
       type: DataTypes.INTEGER,
     },
     video_uuid: {

@@ -1,20 +1,22 @@
+import i18next from 'i18next';
 import * as yup from 'yup';
-
-// const user_uuid = yup.string().required('user_uuid is required.').min(36).max(36);
+import { Like_types } from '../constant';
+// i18next.t('STATUS.INVALID_EMAIL');
 
 const phone = yup
   .string()
   .required('phone is required.')
-  .min(5, 'phone should have atleast 5 characters.')
-  .max(20, 'phone should have atmost 10 characters.')
-  .matches(/^([7-9]{1})([0-9]{9})$/, 'Phone No. Should Be Valid.');
+  .min(5, i18next.t('STATUS.PHONE_MIN_CHAR_REQUIRED'))
+  .max(13, i18next.t('STATUS.PHONE_MAX_CHAR_REQUIRED'))
+  .matches(/^([7-9]{1})([0-9]{9})$/, i18next.t('STATUS.PHONE_VALID'));
+
 const first_name = yup
   .string()
   .required('First Name is required.')
   .trim()
-  .min(3, 'First name should have atleast 3 characters.');
-const last_name = yup.string().required('Last name is required.').min(3, 'Last name should have atleast 3 characters.');
-const email = yup.string().required('Email is required.').email('This is invalid email.');
+  .min(3, i18next.t('STATUS.FIRST_NAME_MIN_CHAR'));
+const last_name = yup.string().required('Last name is required.').min(3, i18next.t('STATUS.LAST_NAME_MIN_CHAR'));
+const email = yup.string().required('Email is required.').email(i18next.t('STATUS.INVALID_EMAIL'));
 const password = yup
   .string()
   .required('Password is required.')
@@ -28,14 +30,14 @@ const otp = yup
 const code = yup.string().required('code is required').min(8, 'code should have atleast 8 characters.');
 const channel_id = yup.string().required('channel_id is required');
 const video_id = yup.string().required('video_id is required');
-const comment_id = yup.string().required('comment_id is required');
+const comment_id = yup.string().required(i18next.t('STATUS.COMMENT_ID_REQUIRED'));
 const comment = yup.string().required('comment is required').min(5, 'comment should have atleast 5 characters.');
 const title = yup.string().required('title is required').min(5, 'title should have atleast 5 characters.');
 const description = yup
   .string()
   .required('description is required')
   .min(5, 'description should have atleast 5 characters.');
-const type = yup.string().required('type is required').oneOf(['like', 'dislike']);
+const type = yup.string().required(i18next.t('STATUS.TYPE_IS_REQUIRED')).oneOf([Like_types.LIKE, Like_types.DISLIKE]);
 const sub_comment_id = yup.string().required('sub_comment_id is required');
 
 export const UserRegisterationRules = yup.object().shape({
@@ -107,4 +109,9 @@ export const subCommentUpdateOnVideoRule = yup.object().shape({
 
 export const subCommentdeleteOnVideoRule = yup.object().shape({
   sub_comment_id,
+});
+
+export const likeCreateOnCommentRule = yup.object().shape({
+  comment_id,
+  type,
 });

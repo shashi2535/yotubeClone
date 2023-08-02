@@ -1,3 +1,4 @@
+import i18next from 'i18next';
 import { Op } from 'sequelize';
 import { logger } from '../config';
 import { HttpStatus } from '../constant';
@@ -7,8 +8,9 @@ import {
   IcommentUpdateAttributes,
   Icontext,
   IdeleteVideo,
+  ILikeOnComment,
 } from '../interface';
-import { Comment, User, Video } from '../models';
+import { Comment, Like, User, Video } from '../models';
 import { Sub_Comment } from '../models/sub_comment';
 import { generateUUID } from '../utils';
 
@@ -21,7 +23,7 @@ const commentResolverController = {
       if (!videoData) {
         return {
           status_code: HttpStatus.OK,
-          message: 'Video Not Found.',
+          message: i18next.t('STATUS.VIDEO_NOT_FOUND'),
         };
       }
       const commentData = await Comment.create({
@@ -31,10 +33,9 @@ const commentResolverController = {
         video_id: videoData.id,
         video_uuid: videoData.video_uuid,
       });
-      // const countData = await Comment.findOne({ where: {}, nest: true, raw: true });
       return {
         status_code: HttpStatus.OK,
-        message: 'Comment Added Successfully.',
+        message: i18next.t('STATUS.COMMENT_ADDED'),
         data: {
           comment_uuid: commentData.comment_uuid,
           comment: comment,
@@ -43,90 +44,193 @@ const commentResolverController = {
           updated_at: commentData.updated_at,
         },
       };
-    } catch (err: any) {
-      return {
-        status_code: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: err.message,
-      };
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          message: err.message,
+          status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        };
+      }
     }
   },
   deleteComment: async (parent: unknown, input: IcommentDeleteAttributes, context: Icontext) => {
     logger.info('in delete comment api');
-    const { userId } = context;
-    const { comment_id } = input.input;
-    const commentData = await Comment.findOne({
-      where: {
-        [Op.and]: [
-          {
-            user_id: userId,
-          },
-          {
-            comment_uuid: comment_id,
-          },
-        ],
-      },
-      raw: true,
-      nest: true,
-    });
-    if (!commentData) {
+    try {
+      const { userId } = context;
+      const { comment_id } = input.input;
+      const commentData = await Comment.findOne({
+        where: {
+          [Op.and]: [
+            {
+              user_id: userId,
+            },
+            {
+              comment_uuid: comment_id,
+            },
+          ],
+        },
+        raw: true,
+        nest: true,
+      });
+      if (!commentData) {
+        return {
+          message: i18next.t('STATUS.COMMENT_NOT_FOUND'),
+          status_code: HttpStatus.BAD_REQUEST,
+        };
+      }
+      await Comment.destroy({
+        where: {
+          comment_uuid: comment_id,
+        },
+      });
       return {
-        message: 'Comment Not Found.',
-        status_code: HttpStatus.BAD_REQUEST,
+        message: i18next.t('STATUS.COMMENT_DELETED_SUCCESSFULLY'),
+        status_code: HttpStatus.OK,
       };
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          message: err.message,
+          status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        };
+      }
     }
-    await Comment.destroy({
-      where: {
-        comment_uuid: comment_id,
-      },
-    });
-    return {
-      message: 'Comment Deleted Successfully.',
-      status_code: HttpStatus.OK,
-    };
   },
   updateComment: async (parent: unknown, input: IcommentUpdateAttributes, context: Icontext) => {
-    const { comment, comment_id } = input.input;
-    const { userId } = context;
-    logger.info('update comment');
-    const commentData = await Comment.findOne({
-      where: {
-        [Op.and]: [
-          {
-            user_id: userId,
-          },
-          {
-            comment_uuid: comment_id,
-          },
-        ],
-      },
-      raw: true,
-      nest: true,
-    });
-    if (!commentData) {
+    try {
+      const { comment, comment_id } = input.input;
+      const { userId } = context;
+      logger.info('update comment');
+      const commentData = await Comment.findOne({
+        where: {
+          [Op.and]: [
+            {
+              user_id: userId,
+            },
+            {
+              comment_uuid: comment_id,
+            },
+          ],
+        },
+        raw: true,
+        nest: true,
+      });
+      if (!commentData) {
+        return {
+          message: i18next.t('STATUS.COMMENT_NOT_FOUND'),
+          status_code: HttpStatus.BAD_REQUEST,
+          data: null,
+        };
+      }
+      await Comment.update(
+        {
+          text: comment,
+        },
+        { where: { comment_uuid: comment_id } }
+      );
+      const commentUpdatedData = await Comment.findOne({ where: { comment_uuid: comment_id }, raw: true, nest: true });
       return {
-        message: 'Comment Not Found.',
-        status_code: HttpStatus.BAD_REQUEST,
-        data: null,
+        status_code: HttpStatus.OK,
+        message: i18next.t('STATUS.COMMENT_UPDATED_SUCCESSFULLY'),
+        data: {
+          comment_uuid: commentData.comment_uuid,
+          comment: comment,
+          video_uuid: commentUpdatedData?.video_id,
+          created_at: commentData.created_at,
+          updated_at: commentData.updated_at,
+        },
       };
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          message: err.message,
+          status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        };
+      }
     }
-    await Comment.update(
-      {
-        text: comment,
-      },
-      { where: { comment_uuid: comment_id } }
-    );
-    const commentUpdatedData = await Comment.findOne({ where: { comment_uuid: comment_id }, raw: true, nest: true });
-    return {
-      status_code: HttpStatus.OK,
-      message: 'Comment Updated Successfully.',
-      data: {
-        comment_uuid: commentData.comment_uuid,
-        comment: comment,
-        video_uuid: commentUpdatedData?.video_id,
-        created_at: commentData.created_at,
-        updated_at: commentData.updated_at,
-      },
-    };
+  },
+  likeOnComment: async (parent: unknown, input: ILikeOnComment, context: Icontext) => {
+    try {
+      const { type, comment_id } = input.input;
+      const { userId } = context;
+      const commentData = await Comment.findOne({ where: { comment_uuid: comment_id }, raw: true, nest: true });
+      if (!commentData) {
+        return {
+          status_code: HttpStatus.OK,
+          message: i18next.t('STATUS.COMMENT_NOT_FOUND'),
+        };
+      }
+      // { video_uuid: video_id }
+      const likeData = await Like.findOne({
+        where: {
+          [Op.and]: [{ comment_id: commentData.id }, { user_id: userId }],
+        },
+      });
+      if (!likeData) {
+        await Like.create({
+          like_uuid: generateUUID(),
+          user_id: userId,
+          comment_id: commentData.id,
+          reaction: type,
+        });
+        const commentCount = await Like.count({ where: { comment_id: commentData.id } });
+        return {
+          message: i18next.t('STATUS.FEEDBACK_SEND_TO_CREATER_SUCCESSFULLY'),
+          status_code: HttpStatus.OK,
+          data: {
+            count: commentCount,
+          },
+        };
+      }
+      if (likeData) {
+        if (type === likeData.reaction) {
+          await Like.destroy({
+            where: {
+              [Op.and]: [{ comment_id: commentData.id }, { user_id: userId }],
+            },
+          });
+          const videoCount = await Like.count({ where: { comment_id: commentData.id } });
+          return {
+            message: i18next.t('STATUS.FEEDBACK_SEND_TO_CREATER_SUCCESSFULLY'),
+            status_code: HttpStatus.OK,
+            data: {
+              count: videoCount,
+            },
+          };
+        } else {
+          const [, , likeCount] = await Promise.all([
+            Like.destroy({
+              where: {
+                [Op.and]: [{ comment_id: commentData.id }, { user_id: userId }],
+              },
+            }),
+            Like.create({
+              like_uuid: generateUUID(),
+              user_id: userId,
+              comment_id: commentData.id,
+              reaction: type,
+            }),
+            Like.count({ where: { comment_id: commentData.id } }),
+          ]).catch((err) => {
+            throw err;
+          });
+          return {
+            message: i18next.t('STATUS.FEEDBACK_SEND_TO_CREATER_SUCCESSFULLY'),
+            status_code: HttpStatus.OK,
+            data: {
+              count: likeCount,
+            },
+          };
+        }
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          message: err.message,
+          status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        };
+      }
+    }
   },
 };
 const commentQueryController = {
@@ -150,14 +254,16 @@ const commentQueryController = {
       );
       return {
         status_code: HttpStatus.OK,
-        message: 'Comment Added Successfully.',
+        message: i18next.t('STATUS.GET_COMMENT_LIST'),
         data: comment,
       };
-    } catch (err: any) {
-      return {
-        status_code: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: err.message,
-      };
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          message: err.message,
+          status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        };
+      }
     }
   },
 };
