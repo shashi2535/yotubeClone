@@ -1,23 +1,4 @@
 import {
-  userSchema,
-  channelSchema,
-  subScribeSchema,
-  videoSchema,
-  likeSchema,
-  commentSchema,
-  subCommentSchema,
-} from './schema/';
-import {
-  userResolver,
-  ChannelResolver,
-  subscribeResolver,
-  VideoResolver,
-  likeResolver,
-  commentResolver,
-  subCommentResolver,
-} from './resolver';
-import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge';
-import {
   AuthMiddleware,
   loginValidateMiddleware,
   signupValidateMiddleware,
@@ -38,24 +19,10 @@ import {
   deleteSubCommentOnVideoValidateMiddleware,
   createLikeOnCommentValidateMiddleware,
 } from './directives/';
-const typedef = mergeTypeDefs([
-  userSchema,
-  channelSchema,
-  subScribeSchema,
-  videoSchema,
-  likeSchema,
-  commentSchema,
-  subCommentSchema,
-]);
-const resolvers = mergeResolvers([
-  userResolver,
-  ChannelResolver,
-  subscribeResolver,
-  VideoResolver,
-  likeResolver,
-  commentResolver,
-  subCommentResolver,
-]);
+import { mergeAllResolver, mergeAllTypes } from '../utils';
+// typedef and resolver
+const typedef = mergeAllTypes();
+const resolvers = mergeAllResolver();
 export {
   resolvers,
   typedef,

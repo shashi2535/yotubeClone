@@ -1,6 +1,6 @@
 import { likeQueryController, likeResolverController } from '../../controller';
 
-export const likeResolver = {
+export default {
   Query: {
     ...likeQueryController,
   },

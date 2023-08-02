@@ -6,7 +6,8 @@ import { v2 as cloudinary } from 'cloudinary';
 import crypto from 'crypto';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { createWriteStream } from 'fs';
+import { createWriteStream, readdirSync, readFileSync } from 'fs';
+import { mergeResolvers } from '@graphql-tools/merge';
 export const generateOtp = () => 100000 + Math.floor(Math.random() * 900000);
 const {
   TWILLIO: { ACCOUNT_SID, AUTH_TOKEN, TWILLIO_PHONE_NUMBER },
@@ -18,9 +19,32 @@ cloudinary.config({
   api_key: CLOUDINARY_API_KEY,
   api_secret: CLOUDINARY_API_SECRET,
 });
-
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const client = require('twilio')(ACCOUNT_SID, AUTH_TOKEN);
+// merge all the schema
+
+export const mergeAllTypes = () => {
+  const typeDefsDir = join(__dirname, '../graphql/schema');
+  const typedef = readdirSync(typeDefsDir)
+    .filter((filename) => filename.endsWith('.graphql'))
+    .map((filename) => readFileSync(join(typeDefsDir, filename), 'utf-8'))
+    .join('\n');
+  return typedef;
+};
+// merge all the resolver
+export const mergeAllResolver = () => {
+  const resolversDir = join(__dirname, '../graphql/resolver');
+  const resolverFiles = readdirSync(resolversDir).filter((filename) => filename.endsWith('.ts'));
+  const resolver = resolverFiles.map((file) => require(join(resolversDir, file)));
+  const mergedResolvers: any = mergeResolvers(resolver);
+  // delete mergedResolvers['default'];
+  const {
+    default: { Upload, Query, Mutation },
+  } = mergedResolvers;
+  const updateUpload = { Upload: Upload };
+  const megeResolverWithOutDefault = { ...updateUpload, Query, Mutation };
+  return megeResolverWithOutDefault;
+};
 export const SendOtp = async (phone: string, otp: number) => {
   await client.messages.create({
     body: `your otp is ${otp} `,

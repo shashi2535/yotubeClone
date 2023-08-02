@@ -1,6 +1,6 @@
 import { commentQueryController, commentResolverController } from '../../controller';
 
-export const commentResolver = {
+export default {
   Query: {
     ...commentQueryController,
   },

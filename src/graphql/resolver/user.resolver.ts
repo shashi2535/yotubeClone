@@ -1,5 +1,5 @@
 import { userResolverController, userQueryController } from '../../controller';
-export const userResolver = {
+export default {
   Query: {
     ...userQueryController,
   },

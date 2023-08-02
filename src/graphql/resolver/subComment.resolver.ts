@@ -1,6 +1,6 @@
 import { subCommentResolverController, subCommentQueryController } from '../../controller';
 
-export const subCommentResolver = {
+export default {
   Query: {
     ...subCommentQueryController,
   },
