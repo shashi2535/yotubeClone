@@ -10,7 +10,7 @@ export type channelInput = Optional<IchannelAttributes, 'id'>;
 class Channel extends Model<IchannelAttributes, channelInput> implements IchannelAttributes {
   public id!: number;
   public chanel_uuid: string;
-  public UserId: number;
+  public user_id: number;
   public channel_name: string;
   public handle: string;
   public discription: string;
@@ -27,7 +27,7 @@ Channel.init(
       autoIncrement: true,
       primaryKey: true,
     },
-    UserId: {
+    user_id: {
       type: DataTypes.INTEGER,
     },
     chanel_uuid: {
@@ -74,8 +74,6 @@ Subscribe.belongsTo(Channel, { foreignKey: 'subscribed_channel_id' });
 
 Channel.hasOne(Video, { foreignKey: 'channel_id', as: 'Video' });
 Video.belongsTo(Channel, { foreignKey: 'channel_id' });
-
-
 
 // Avtar.belongsTo(User);
 

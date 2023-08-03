@@ -15,7 +15,7 @@ interface IcreateChannel {
 interface IchannelAttributes {
   id: number;
   chanel_uuid?: string;
-  UserId?: number;
+  user_id?: number;
   channel_name?: string;
   handle?: string;
   discription?: string;

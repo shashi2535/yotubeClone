@@ -1,7 +1,6 @@
-import { DataTypes, ForeignKey, Model, Sequelize } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 import { sequelizeConnection } from '../config';
 import { IAvtarAttributes } from '../interface/avtar';
-import { Channel } from './channel';
 export type avtarInput = Partial<IAvtarAttributes>;
 
 class Avtar extends Model<IAvtarAttributes, avtarInput> implements IAvtarAttributes {

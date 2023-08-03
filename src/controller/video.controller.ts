@@ -16,7 +16,7 @@ const videoResolverController = {
         video_url,
       } = input;
       const { userId } = context;
-      const channelData = await Channel.findOne({ where: { UserId: userId } });
+      const channelData = await Channel.findOne({ where: { user_id: userId } });
       if (!channelData) {
         return {
           status_code: HttpStatus.OK,

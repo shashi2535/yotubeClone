@@ -14,7 +14,7 @@ type channel {
   handle: String
   chanel_uuid: String
   channel_name: String
-  UserId: ID
+  user_id: ID
 }
 type User {
   email: String

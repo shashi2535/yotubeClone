@@ -6,11 +6,11 @@ import { generateUUID, picStoreInTmpFolder, picUpdatedInCloudinary, picUploadInC
 import i18next from 'i18next';
 
 const channelResolverController = {
-  createChannel: async (parent: unknown, input: IcreateChannel, Icontext: Icontext) => {
+  createChannel: async (parent: unknown, input: IcreateChannel, context: Icontext) => {
     try {
       const { channel_name, handle, profile_picture } = input;
-      const { userId, user_uuid } = Icontext;
-      const channelData = await Channel.findOne({ where: { UserId: userId } });
+      const { userId, user_uuid } = context;
+      const channelData = await Channel.findOne({ where: { user_id: userId } });
       if (channelData) {
         return {
           message: i18next.t('STATUS.CAN_NOT_CREATE_CHANNEL'),
@@ -24,7 +24,7 @@ const channelResolverController = {
           handle,
           chanel_uuid: generateUUID(),
           channel_name,
-          UserId: userId,
+          user_id: userId,
         });
         return {
           status_code: HttpStatus.OK,
@@ -34,7 +34,7 @@ const channelResolverController = {
               handle: channelCreateData.handle,
               chanel_uuid: channelCreateData.chanel_uuid,
               channel_name: channelCreateData.channel_name,
-              UserId: user_uuid,
+              user_id: user_uuid,
               created_at: channelCreateData.created_at,
               updated_at: channelCreateData.updated_at,
             },
@@ -48,7 +48,7 @@ const channelResolverController = {
           handle,
           chanel_uuid: generateUUID(),
           channel_name,
-          UserId: userId,
+          user_id: userId,
         });
         const avtarData = await Avtar.create({
           avtar_url: String(data.url),
@@ -63,7 +63,7 @@ const channelResolverController = {
             handle: channelCreateData.handle,
             chanel_uuid: channelCreateData.chanel_uuid,
             channel_name: channelCreateData.channel_name,
-            UserId: user_uuid,
+            user_id: user_uuid,
             url: avtarData.avtar_url,
             created_at: channelCreateData.created_at,
             updated_at: channelCreateData.updated_at,
@@ -85,7 +85,7 @@ const channelResolverController = {
       const { userId, user_uuid } = Icontext;
 
       const channelData: IchannelAttributes = await Channel.findOne({
-        where: { UserId: userId },
+        where: { user_id: userId },
         rejectOnEmpty: true,
         include: { model: Avtar, attributes: ['public_id'], as: 'Avtar' },
         raw: true,
@@ -104,13 +104,13 @@ const channelResolverController = {
           { handle, channel_name },
           {
             where: {
-              UserId: userId,
+              user_id: userId,
             },
           }
         );
         const updatedChanelData: IchannelAttributes = (await Channel.findOne({
           where: {
-            UserId: userId,
+            user_id: userId,
           },
           include: [{ model: Avtar, attributes: ['avtar_url'], as: 'Avtar' }],
         })) as any;
@@ -121,7 +121,7 @@ const channelResolverController = {
             handle: updatedChanelData?.handle,
             chanel_uuid: updatedChanelData?.chanel_uuid,
             channel_name: updatedChanelData?.channel_name,
-            UserId: user_uuid,
+            user_id: user_uuid,
             created_at: updatedChanelData?.created_at,
             updated_at: updatedChanelData?.updated_at,
             url: updatedChanelData?.Avtar?.avtar_url,
@@ -142,7 +142,7 @@ const channelResolverController = {
         );
         const updatedChanelData: IchannelAttributes = (await Channel.findOne({
           where: {
-            UserId: userId,
+            user_id: userId,
           },
           include: [{ model: Avtar, attributes: ['avtar_url'], as: 'Avtar' }],
         })) as any;
@@ -154,7 +154,7 @@ const channelResolverController = {
             handle: updatedChanelData?.handle,
             chanel_uuid: updatedChanelData?.chanel_uuid,
             channel_name: updatedChanelData?.channel_name,
-            UserId: user_uuid,
+            user_id: user_uuid,
             created_at: updatedChanelData?.created_at,
             updated_at: updatedChanelData?.updated_at,
             url: updatedChanelData?.Avtar?.avtar_url,
@@ -176,13 +176,13 @@ const channelResolverController = {
           { handle, channel_name },
           {
             where: {
-              UserId: userId,
+              user_id: userId,
             },
           }
         );
         const updatedChanelData = await Channel.findOne({
           where: {
-            UserId: userId,
+            user_id: userId,
           },
         });
         return {
@@ -192,7 +192,7 @@ const channelResolverController = {
             handle: updatedChanelData?.handle,
             chanel_uuid: updatedChanelData?.chanel_uuid,
             channel_name: updatedChanelData?.channel_name,
-            UserId: user_uuid,
+            user_id: user_uuid,
             created_at: updatedChanelData?.created_at,
             updated_at: updatedChanelData?.updated_at,
           },
@@ -211,14 +211,14 @@ const channelResolverController = {
     try {
       const { userId, user_uuid } = context;
       logger.info(`in delete channel ${userId}`);
-      const channelData = await Channel.findOne({ where: { UserId: userId }, raw: true, nest: true });
+      const channelData = await Channel.findOne({ where: { user_id: userId }, raw: true, nest: true });
       if (!channelData) {
         return {
           message: i18next.t('STATUS.CHANNEL_NOT_FOUND'),
           status_code: HttpStatus.BAD_REQUEST,
         };
       }
-      await Channel.destroy({ where: { UserId: userId } });
+      await Channel.destroy({ where: { user_id: userId } });
       await Avtar.destroy({ where: { channel_id: channelData.id } });
       return {
         status_code: HttpStatus.OK,
@@ -227,7 +227,7 @@ const channelResolverController = {
           handle: channelData?.handle,
           chanel_uuid: channelData?.chanel_uuid,
           channel_name: channelData?.channel_name,
-          UserId: user_uuid,
+          user_id: user_uuid,
           created_at: channelData?.created_at,
           updated_at: channelData?.updated_at,
         },
@@ -283,7 +283,7 @@ const channelQueryController = {
       const { userId, user_uuid } = context;
       const channelData: IchannelAttributes = (await Channel.findOne({
         where: {
-          UserId: userId,
+          user_id: userId,
           // chanel_uuid: channel_id,
         },
         include: [
@@ -300,7 +300,7 @@ const channelQueryController = {
             as: 'Avtar',
           },
         ],
-        attributes: { exclude: ['UserId'] },
+        attributes: { exclude: ['user_id'] },
         raw: true,
         nest: true,
       })) as any;

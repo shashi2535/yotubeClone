@@ -112,10 +112,11 @@ User.init(
     modelName: 'User',
   }
 );
+User.hasOne(Channel, { foreignKey: 'user_id' });
+Channel.belongsTo(User), { foreignKey: 'user_id', as: 'User' };
+
 User.hasOne(Avtar, { foreignKey: 'user_id' });
-User.hasOne(Channel, { foreignKey: 'UserId' });
 Avtar.belongsTo(User, { foreignKey: 'user_id', as: 'User' });
-Channel.belongsTo(User), { foreignKey: 'UserId', as: 'User' };
 
 User.hasOne(Subscribe, { foreignKey: 'subscribed_user_id', as: 'Subscribe' });
 Subscribe.belongsTo(User, { foreignKey: 'subscribed_user_id' });
@@ -131,4 +132,5 @@ Comment.belongsTo(User, { foreignKey: 'user_id', as: 'User_Comment' });
 
 User.hasOne(Sub_Comment, { foreignKey: 'user_id', as: 'User_Sub_Comment' });
 Sub_Comment.belongsTo(User, { foreignKey: 'user_id', as: 'User_Sub_Comment' });
+
 export { User };
