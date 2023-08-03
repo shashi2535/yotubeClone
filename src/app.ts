@@ -1,34 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ApolloServer } from 'apollo-server-express';
 import express from 'express';
-import { makeExecutableSchema } from '@graphql-tools/schema';
 import { handle as i18nextMiddlewareHandle, LanguageDetector } from 'i18next-http-middleware';
 import i18next from 'i18next';
 import i18nextFsBackend from 'i18next-fs-backend';
 import { resolve } from 'path';
-import {
-  resolvers,
-  typedef,
-  verifyEmailValidateMiddleware,
-  AuthMiddleware,
-  loginValidateMiddleware,
-  signupValidateMiddleware,
-  resendCodeOnEmailValidateMiddleware,
-  verifyOtpValidateMiddleware,
-  imageValidation,
-  videoValidation,
-  checkAuthMiddleware,
-  verifiedChannelByAdminValidateMiddleware,
-  videoDeleteValidateMiddleware,
-  videoUpdateValidateMiddleware,
-  createLikeOnVideoValidateMiddleware,
-  createCommentOnVideoValidateMiddleware,
-  deleteCommentOnVideoValidateMiddleware,
-  updateCommentOnVideoValidateMiddleware,
-  deleteSubCommentOnVideoValidateMiddleware,
-  updateSubCommentOnVideoValidateMiddleware,
-  createLikeOnCommentValidateMiddleware,
-} from './graphql';
 import { connection } from './config/';
 import http from 'http';
 import { logger } from './config';
@@ -36,8 +12,8 @@ import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { ApolloServerPluginDrainHttpServer, ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core';
 import { Locale } from './constant';
+import { schema } from './helper';
 import { verifyJwt } from './middleware';
-
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const graphqlUploadExpress = require('graphql-upload/graphqlUploadExpress.js');
 const app = express();
@@ -64,31 +40,6 @@ i18next
 
 app.use(i18nextMiddlewareHandle(i18next));
 const expressServer = async () => {
-  let schema = makeExecutableSchema({
-    typeDefs: typedef,
-    resolvers,
-  });
-  // new midleware is priority first for calling
-  schema = createLikeOnCommentValidateMiddleware(schema, 'createLikeOnCommentValid');
-  schema = deleteSubCommentOnVideoValidateMiddleware(schema, 'deleteSubCommentValid');
-  schema = updateSubCommentOnVideoValidateMiddleware(schema, 'updateSubCommentValid');
-  schema = updateCommentOnVideoValidateMiddleware(schema, 'updateCommentValid');
-  schema = deleteCommentOnVideoValidateMiddleware(schema, 'deleteCommentValid');
-  schema = createCommentOnVideoValidateMiddleware(schema, 'createCommentValid');
-  schema = createLikeOnVideoValidateMiddleware(schema, 'creaeLikeValid');
-  schema = videoUpdateValidateMiddleware(schema, 'videoUpdateValid');
-  schema = videoDeleteValidateMiddleware(schema, 'videoDeleteValid');
-  schema = verifiedChannelByAdminValidateMiddleware(schema, 'verifyChannelValid');
-  schema = videoValidation(schema, 'videoValid');
-  schema = checkAuthMiddleware(schema, 'roleCheck');
-  schema = verifyOtpValidateMiddleware(schema, 'verifyOtpValid');
-  schema = resendCodeOnEmailValidateMiddleware(schema, 'resendCodeOnEmailValid');
-  schema = verifyEmailValidateMiddleware(schema, 'verifyEmailValid');
-  schema = loginValidateMiddleware(schema, 'loginValid');
-  schema = signupValidateMiddleware(schema, 'signupValid');
-  schema = imageValidation(schema, 'avtarValid');
-  schema = AuthMiddleware(schema, 'auth');
-
   // Creating the WebSocket server
   const wsServer = new WebSocketServer({
     server: httpServer,

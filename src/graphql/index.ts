@@ -1,48 +1,5 @@
-import {
-  AuthMiddleware,
-  loginValidateMiddleware,
-  signupValidateMiddleware,
-  verifyEmailValidateMiddleware,
-  resendCodeOnEmailValidateMiddleware,
-  verifyOtpValidateMiddleware,
-  imageValidation,
-  checkAuthMiddleware,
-  videoValidation,
-  verifiedChannelByAdminValidateMiddleware,
-  videoDeleteValidateMiddleware,
-  videoUpdateValidateMiddleware,
-  createLikeOnVideoValidateMiddleware,
-  createCommentOnVideoValidateMiddleware,
-  deleteCommentOnVideoValidateMiddleware,
-  updateCommentOnVideoValidateMiddleware,
-  updateSubCommentOnVideoValidateMiddleware,
-  deleteSubCommentOnVideoValidateMiddleware,
-  createLikeOnCommentValidateMiddleware,
-} from './directives/';
 import { mergeAllResolver, mergeAllTypes } from '../utils';
 // typedef and resolver
 const typedef = mergeAllTypes();
 const resolvers = mergeAllResolver();
-export {
-  resolvers,
-  typedef,
-  AuthMiddleware,
-  loginValidateMiddleware,
-  signupValidateMiddleware,
-  verifyEmailValidateMiddleware,
-  resendCodeOnEmailValidateMiddleware,
-  verifyOtpValidateMiddleware,
-  imageValidation,
-  checkAuthMiddleware,
-  videoValidation,
-  verifiedChannelByAdminValidateMiddleware,
-  videoDeleteValidateMiddleware,
-  videoUpdateValidateMiddleware,
-  createLikeOnVideoValidateMiddleware,
-  createCommentOnVideoValidateMiddleware,
-  deleteCommentOnVideoValidateMiddleware,
-  updateCommentOnVideoValidateMiddleware,
-  updateSubCommentOnVideoValidateMiddleware,
-  deleteSubCommentOnVideoValidateMiddleware,
-  createLikeOnCommentValidateMiddleware,
-};
+export { typedef, resolvers };
