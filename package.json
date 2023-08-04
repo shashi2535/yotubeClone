@@ -4,8 +4,8 @@
     "description": "",
     "main": "src/app.ts",
     "engines": {
-    "node": "16.15.1"
-  },
+        "node": "16.15.1"
+    },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "start:dev": "cross-env NODE_ENV=development ts-node-dev --respawn --no-notify src/app.ts",
@@ -56,7 +56,7 @@
         "lodash": "^4.17.21",
         "multiformats": "^9.9.0",
         "mysql": "^2.18.1",
-        "mysql2": "^3.3.3",
+        "mysql2": "^3.6.0",
         "nodemailer": "^6.9.3",
         "sequelize": "^6.32.0",
         "ts-node-dev": "^2.0.0",
