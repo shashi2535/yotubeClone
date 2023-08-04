@@ -76,5 +76,4 @@ Channel.hasOne(Video, { foreignKey: 'channel_id', as: 'Video' });
 Video.belongsTo(Channel, { foreignKey: 'channel_id' });
 
 // Avtar.belongsTo(User);
-
 export { Channel };

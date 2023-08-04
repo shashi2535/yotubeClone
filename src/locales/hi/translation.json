@@ -124,6 +124,13 @@
     "PHONE_VALID": "फोन नंबर वैध होना चाहिए.",
     "FIRST_NAME_MIN_CHAR": "प्रथम नाम में कम से कम 3 अक्षर होने चाहिए.",
     "LAST_NAME_MIN_CHAR": "अंतिम नाम में कम से कम 3 अक्षर होने चाहिए.",
-    "INVALID_EMAIL": "यह अमान्य ईमेल है."
+    "INVALID_EMAIL": "यह अमान्य ईमेल है.",
+    "INVALID_INPUT": "कृपया इनपुट प्रदान करें.",
+    "PLAYLIST_CREATED_SUCCESSFULLY": "प्ले सूची सफलतापूर्वक बनाई गई.",
+    "PLAYLIST_ALREADY_EXIST": "प्लेलिस्ट पहले से मौजूद है.",
+    "INVALID_PLAYLIST_ID": "अमान्य प्लेलिस्ट आईडी.",
+    "NO_PLAYLIST_FOUND": "कोई प्लेलिस्ट नहीं मिली.",
+    "PLAYLIST_SUCCESSFULLY": "प्लेलिस्ट सफलतापूर्वक मिल गई.",
+    "PLAYLIST_DELETED_SUCCESSFULLY": "प्लेलिस्ट सफलतापूर्वक हटा दी गई."
   }
 }

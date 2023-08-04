@@ -5,3 +5,4 @@ export * from './video.controller';
 export * from './like.controller';
 export * from './comment.controller';
 export * from './subComment.controller';
+export * from './playlist.controller';

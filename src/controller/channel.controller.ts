@@ -79,10 +79,10 @@ const channelResolverController = {
       }
     }
   },
-  updateChannel: async (paraent: unknown, input: IcreateChannel, Icontext: Icontext) => {
+  updateChannel: async (paraent: unknown, input: IcreateChannel, context: Icontext) => {
     try {
       const { channel_name, handle, profile_picture } = input;
-      const { userId, user_uuid } = Icontext;
+      const { userId, user_uuid } = context;
 
       const channelData: IchannelAttributes = await Channel.findOne({
         where: { user_id: userId },
@@ -434,3 +434,18 @@ export { channelQueryController, channelResolverController };
 //     "comment":"very good updated"
 //   }
 //  }
+
+// >>>>>>>>  For the like on comment <<<<<<<<<<<<
+//     {
+//     "likeOnCommentReq":{
+//       "comment_id":"a1373d2b-56f9-4ae0-9312-e45498220c9c",
+//       "type":"like"
+//     }
+
+// >>>>>>>>>>> For The Creation Of Playlist <<<<<<<<<<<<<<<<
+//  {
+//     "playlistCreateReq":{
+//       "playlist_name":"mix",
+//       "channel_id":"403ced54-3684-452f-bb56-00efa5859a63"
+//     }
+//     }

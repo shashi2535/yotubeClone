@@ -19,6 +19,8 @@ import {
   subCommentUpdateOnVideoRule,
   subCommentdeleteOnVideoRule,
   likeCreateOnCommentRule,
+  createPlaylistRule,
+  removePlaylistRule,
 } from '../../validation';
 import {
   IloginInput,
@@ -35,6 +37,8 @@ import {
   IUpdateSubComment,
   IDeleteSubComment,
   ILikeOnComment,
+  IPlaylistCreateAttributes,
+  IDeletePlayListAttributes,
 } from '../../interface';
 import i18next from 'i18next';
 import { validateUUID } from '../../utils';
@@ -75,6 +79,12 @@ const imageValidation = (schema: GraphQLSchema, directiveName: any) => {
         // Replace the original resolver with a function that *first* calls
         // the original resolver, then converts its result to upper case
         fieldConfig.resolve = async function (source: unknown, args: any, context: any, info: unknown) {
+          if (Object.keys(args).length === 0) {
+            return {
+              message: i18next.t('STATUS.INVALID_INPUT'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
           const file = await args?.profile_picture;
           // logger.info('image validation', JSON.stringify(file));
           if (file) {
@@ -101,6 +111,12 @@ const loginValidateMiddleware = (schema: GraphQLSchema, directiveName: any) => {
         // Get this field's original resolver
         const { resolve = defaultFieldResolver } = fieldConfig;
         fieldConfig.resolve = async function (source: unknown, args: IloginInput, context: any, info: unknown) {
+          if (Object.keys(args).length === 0) {
+            return {
+              message: i18next.t('STATUS.INVALID_INPUT'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
           logger.info(`input in login validation>>> ${JSON.stringify(args)}`);
           await UserLoginRules.validate(args.input, { abortEarly: false });
           const result = await resolve(source, args, context, info);
@@ -120,6 +136,12 @@ const signupValidateMiddleware = (schema: GraphQLSchema, directiveName: any) => 
         // Get this field's original resolver
         const { resolve = defaultFieldResolver } = fieldConfig;
         fieldConfig.resolve = async function (source: unknown, args: IsignupInput, Icontext: any, info: unknown) {
+          if (Object.keys(args).length === 0) {
+            return {
+              message: i18next.t('STATUS.INVALID_INPUT'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
           logger.info(`input in signup validation>>> ${JSON.stringify(args)}`);
           await UserRegisterationRules.validate(args.input);
           const result = await resolve(source, args, Icontext, info);
@@ -144,6 +166,12 @@ const verifyEmailValidateMiddleware = (schema: GraphQLSchema, directiveName: any
           Icontext: any,
           info: unknown
         ) {
+          if (Object.keys(args).length === 0) {
+            return {
+              message: i18next.t('STATUS.INVALID_INPUT'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
           logger.info(`input in signup validation>>> ${JSON.stringify(args)}`);
           await verifyEmailRules.validate(args.input);
           const result = await resolve(source, args, Icontext, info);
@@ -163,6 +191,12 @@ const resendCodeOnEmailValidateMiddleware = (schema: GraphQLSchema, directiveNam
         // Get this field's original resolver
         const { resolve = defaultFieldResolver } = fieldConfig;
         fieldConfig.resolve = async function (source: unknown, args: any, Icontext: any, info: unknown) {
+          if (Object.keys(args).length === 0) {
+            return {
+              message: i18next.t('STATUS.INVALID_INPUT'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
           logger.info(`input in resendCodeOnEmail validation>>> ${JSON.stringify(args)}`);
           await resendCodeOnEmailRule.validate(args.input);
           const result = await resolve(source, args, Icontext, info);
@@ -182,6 +216,12 @@ const verifyOtpValidateMiddleware = (schema: GraphQLSchema, directiveName: any) 
         // Get this field's original resolver
         const { resolve = defaultFieldResolver } = fieldConfig;
         fieldConfig.resolve = async function (source: unknown, args: IverifyOtpInput, Icontext: any, info: unknown) {
+          if (Object.keys(args).length === 0) {
+            return {
+              message: i18next.t('STATUS.INVALID_INPUT'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
           logger.info(`input in resendCodeOnEmail validation>>> ${JSON.stringify(args)}`);
           await verifyOtpRule.validate(args.input);
           const result = await resolve(source, args, Icontext, info);
@@ -228,6 +268,12 @@ const videoValidation = (schema: GraphQLSchema, directiveName: any) => {
         // Replace the original resolver with a function that *first* calls
         // the original resolver, then converts its result to upper case
         fieldConfig.resolve = async function (source: unknown, args: ICreateVideo, context: any, info: unknown) {
+          if (Object.keys(args).length === 0) {
+            return {
+              message: i18next.t('STATUS.INVALID_INPUT'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
           const file = await args?.video_url;
           const { description, title } = args.input;
           await verifiedCreateVideoRule.validate({ description, title });
@@ -255,6 +301,12 @@ const verifiedChannelByAdminValidateMiddleware = (schema: GraphQLSchema, directi
         // Get this field's original resolver
         const { resolve = defaultFieldResolver } = fieldConfig;
         fieldConfig.resolve = async function (source: unknown, args: any, Icontext: any, info: unknown) {
+          if (Object.keys(args).length === 0) {
+            return {
+              message: i18next.t('STATUS.INVALID_INPUT'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
           logger.info(`input in verifiedChannelByAdminValidateMiddleware validation>>> ${JSON.stringify(args)}`);
           await verifiedChannelByAdminRule.validate(args);
           if (!validateUUID(args.channel_id)) {
@@ -280,6 +332,12 @@ const videoDeleteValidateMiddleware = (schema: GraphQLSchema, directiveName: any
         // Get this field's original resolver
         const { resolve = defaultFieldResolver } = fieldConfig;
         fieldConfig.resolve = async function (source: unknown, args: any, Icontext: any, info: unknown) {
+          if (Object.keys(args).length === 0) {
+            return {
+              message: i18next.t('STATUS.INVALID_INPUT'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
           logger.info(`input in videoDeleteValidateMiddleware validation>>> ${JSON.stringify(args)}`);
           await videoUpdateRule.validate(args);
           if (!validateUUID(args.video_id)) {
@@ -305,6 +363,12 @@ const videoUpdateValidateMiddleware = (schema: GraphQLSchema, directiveName: any
         // Get this field's original resolver
         const { resolve = defaultFieldResolver } = fieldConfig;
         fieldConfig.resolve = async function (source: unknown, args: IUpdateVideo, Icontext: any, info: unknown) {
+          if (Object.keys(args).length === 0) {
+            return {
+              message: i18next.t('STATUS.INVALID_INPUT'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
           const { description, title, video_id } = args.input;
           logger.info(`input in videoUpdateValidateMiddleware validation>>> ${JSON.stringify(args)}`);
           await updateVideoRule.validate({ description, title, video_id });
@@ -331,6 +395,12 @@ const createLikeOnVideoValidateMiddleware = (schema: GraphQLSchema, directiveNam
         // Get this field's original resolver
         const { resolve = defaultFieldResolver } = fieldConfig;
         fieldConfig.resolve = async function (source: unknown, args: IlikeCreateReq, Icontext: any, info: unknown) {
+          if (Object.keys(args).length === 0) {
+            return {
+              message: i18next.t('STATUS.INVALID_INPUT'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
           const { type, video_id } = args.input;
           logger.info(`input in createLikeOnVideoValidateMiddleware validation>>> ${JSON.stringify(args)}`);
           await likeCreateOnVideoRule.validate({ type, video_id });
@@ -362,6 +432,12 @@ const createCommentOnVideoValidateMiddleware = (schema: GraphQLSchema, directive
           Icontext: any,
           info: unknown
         ) {
+          if (Object.keys(args).length === 0) {
+            return {
+              message: i18next.t('STATUS.INVALID_INPUT'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
           const { comment, video_id } = args.input;
           logger.info(`input in createCommentOnVideoValidateMiddleware validation>>> ${JSON.stringify(args)}`);
           await commentCreateOnVideoRule.validate({ comment, video_id });
@@ -393,6 +469,12 @@ const deleteCommentOnVideoValidateMiddleware = (schema: GraphQLSchema, directive
           Icontext: any,
           info: unknown
         ) {
+          if (Object.keys(args).length === 0) {
+            return {
+              message: i18next.t('STATUS.INVALID_INPUT'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
           const { comment_id } = args.input;
           logger.info(`input in deleteCommentOnVideoValidateMiddleware validation>>> ${JSON.stringify(args)}`);
           await commentDeleteOnVideoRule.validate({ comment_id });
@@ -424,6 +506,12 @@ const updateCommentOnVideoValidateMiddleware = (schema: GraphQLSchema, directive
           Icontext: any,
           info: unknown
         ) {
+          if (Object.keys(args).length === 0) {
+            return {
+              message: i18next.t('STATUS.INVALID_INPUT'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
           const { comment_id, comment } = args.input;
           logger.info(`input in updateCommentOnVideoValidateMiddleware validation>>> ${JSON.stringify(args)}`);
           await commentUpdateOnVideoRule.validate({ comment_id, comment });
@@ -450,6 +538,12 @@ const updateSubCommentOnVideoValidateMiddleware = (schema: GraphQLSchema, direct
         // Get this field's original resolver
         const { resolve = defaultFieldResolver } = fieldConfig;
         fieldConfig.resolve = async function (source: unknown, args: IUpdateSubComment, Icontext: any, info: unknown) {
+          if (Object.keys(args).length === 0) {
+            return {
+              message: i18next.t('STATUS.INVALID_INPUT'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
           const { sub_comment_id, comment } = args.input;
           logger.info(`input in updateSubCommentOnVideoValidateMiddleware validation>>> ${JSON.stringify(args)}`);
           await subCommentUpdateOnVideoRule.validate({ sub_comment_id, comment });
@@ -476,6 +570,12 @@ const deleteSubCommentOnVideoValidateMiddleware = (schema: GraphQLSchema, direct
         // Get this field's original resolver
         const { resolve = defaultFieldResolver } = fieldConfig;
         fieldConfig.resolve = async function (source: unknown, args: IDeleteSubComment, Icontext: any, info: unknown) {
+          if (Object.keys(args).length === 0) {
+            return {
+              message: i18next.t('STATUS.INVALID_INPUT'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
           const { sub_comment_id } = args.input;
           logger.info(`input in deleteSubCommentOnVideoValidateMiddleware validation>>> ${JSON.stringify(args)}`);
           await subCommentdeleteOnVideoRule.validate({ sub_comment_id });
@@ -502,6 +602,12 @@ const createLikeOnCommentValidateMiddleware = (schema: GraphQLSchema, directiveN
         // Get this field's original resolver
         const { resolve = defaultFieldResolver } = fieldConfig;
         fieldConfig.resolve = async function (source: unknown, args: ILikeOnComment, Icontext: any, info: unknown) {
+          if (Object.keys(args).length === 0) {
+            return {
+              message: i18next.t('STATUS.INVALID_INPUT'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
           const { type, comment_id } = args.input;
           logger.info(`input in createLikeOnVideoValidateMiddleware validation>>> ${JSON.stringify(args)}`);
           await likeCreateOnCommentRule.validate({ type, comment_id });
@@ -519,6 +625,81 @@ const createLikeOnCommentValidateMiddleware = (schema: GraphQLSchema, directiveN
     },
   });
 };
+const createPlaylistValidateMiddleware = (schema: GraphQLSchema, directiveName: any) => {
+  return mapSchema(schema, {
+    // Executes once for each object field definition in the schema
+    [MapperKind.OBJECT_FIELD]: (fieldConfig: any) => {
+      const deprecatedDirective = getDirective(schema, fieldConfig, directiveName)?.[0];
+      if (deprecatedDirective) {
+        // Get this field's original resolver
+        const { resolve = defaultFieldResolver } = fieldConfig;
+        fieldConfig.resolve = async function (
+          source: unknown,
+          args: IPlaylistCreateAttributes,
+          Icontext: any,
+          info: unknown
+        ) {
+          if (Object.keys(args).length === 0) {
+            return {
+              message: i18next.t('STATUS.INVALID_INPUT'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
+          const { channel_id, playlist_name } = args.input;
+          logger.info(`input in createPlaylistValidateMiddleware validation>>> ${JSON.stringify(args)}`);
+          await createPlaylistRule.validate({ channel_id, playlist_name });
+          if (!validateUUID(channel_id)) {
+            return {
+              message: i18next.t('STATUS.IVALID_CHANNEL_ID'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
+          const result = await resolve(source, args, Icontext, info);
+          return result;
+        };
+        return fieldConfig;
+      }
+    },
+  });
+};
+const removePlaylistValidateMiddleware = (schema: GraphQLSchema, directiveName: any) => {
+  return mapSchema(schema, {
+    // Executes once for each object field definition in the schema
+    [MapperKind.OBJECT_FIELD]: (fieldConfig: any) => {
+      const deprecatedDirective = getDirective(schema, fieldConfig, directiveName)?.[0];
+      if (deprecatedDirective) {
+        // Get this field's original resolver
+        const { resolve = defaultFieldResolver } = fieldConfig;
+        fieldConfig.resolve = async function (
+          source: unknown,
+          args: IDeletePlayListAttributes,
+          Icontext: any,
+          info: unknown
+        ) {
+          if (Object.keys(args).length === 0) {
+            return {
+              message: i18next.t('STATUS.INVALID_INPUT'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
+          const { playlist_id } = args.input;
+          logger.info(`input in createPlaylistValidateMiddleware validation>>> ${JSON.stringify(args)}`);
+          await removePlaylistRule.validate({ playlist_id });
+          if (!validateUUID(playlist_id)) {
+            return {
+              message: i18next.t('STATUS.INVALID_PLAYLIST_ID'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
+          const result = await resolve(source, args, Icontext, info);
+          return result;
+        };
+        return fieldConfig;
+      }
+    },
+  });
+};
+
 // updateVideoRule;
 export {
   AuthMiddleware,
@@ -540,4 +721,6 @@ export {
   updateSubCommentOnVideoValidateMiddleware,
   deleteSubCommentOnVideoValidateMiddleware,
   createLikeOnCommentValidateMiddleware,
+  createPlaylistValidateMiddleware,
+  removePlaylistValidateMiddleware,
 };

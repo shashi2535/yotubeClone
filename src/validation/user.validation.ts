@@ -39,6 +39,8 @@ const description = yup
   .min(5, 'description should have atleast 5 characters.');
 const type = yup.string().required(i18next.t('STATUS.TYPE_IS_REQUIRED')).oneOf([Like_types.LIKE, Like_types.DISLIKE]);
 const sub_comment_id = yup.string().required('sub_comment_id is required');
+const playlist_name = yup.string().required('playlist_name is required');
+const playlist_id = yup.string().required('playlist_id is required');
 
 export const UserRegisterationRules = yup.object().shape({
   password,
@@ -114,4 +116,13 @@ export const subCommentdeleteOnVideoRule = yup.object().shape({
 export const likeCreateOnCommentRule = yup.object().shape({
   comment_id,
   type,
+});
+
+export const createPlaylistRule = yup.object().shape({
+  channel_id,
+  playlist_name,
+});
+
+export const removePlaylistRule = yup.object().shape({
+  playlist_id,
 });

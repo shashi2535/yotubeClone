@@ -5,3 +5,4 @@ export * from './subscribe';
 export * from './video';
 export * from './like';
 export * from './comment';
+export * from './playlist';

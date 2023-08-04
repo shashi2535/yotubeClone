@@ -20,12 +20,16 @@ import {
   videoDeleteValidateMiddleware,
   videoUpdateValidateMiddleware,
   videoValidation,
+  createPlaylistValidateMiddleware,
+  removePlaylistValidateMiddleware,
 } from '../graphql/directives';
 let schema = makeExecutableSchema({
   typeDefs: typedef,
   resolvers,
 });
 // new midleware is priority first for calling
+schema = removePlaylistValidateMiddleware(schema, 'removePlaylistValid');
+schema = createPlaylistValidateMiddleware(schema, 'createPlaylistValid');
 schema = createLikeOnCommentValidateMiddleware(schema, 'createLikeOnCommentValid');
 schema = deleteSubCommentOnVideoValidateMiddleware(schema, 'deleteSubCommentValid');
 schema = updateSubCommentOnVideoValidateMiddleware(schema, 'updateSubCommentValid');

@@ -124,6 +124,13 @@
     "PHONE_VALID": "Phone No. should Be Valid.",
     "FIRST_NAME_MIN_CHAR": "First name should have atleast 3 characters.",
     "LAST_NAME_MIN_CHAR": "Last name should have atleast 3 characters.",
-    "INVALID_EMAIL": "This is invalid email."
+    "INVALID_EMAIL": "This is invalid email.",
+    "INVALID_INPUT": "Please Provide Input",
+    "PLAYLIST_CREATED_SUCCESSFULLY": "Play List Created Successfully.",
+    "PLAYLIST_ALREADY_EXIST": "Playlist Already Exists.",
+    "INVALID_PLAYLIST_ID": "Invalid Playlist Id.",
+    "NO_PLAYLIST_FOUND": "No Playlist Found.",
+    "PLAYLIST_SUCCESSFULLY": "Got Playlist Successfully.",
+    "PLAYLIST_DELETED_SUCCESSFULLY": "Playlist Deleted Successfully."
   }
 }

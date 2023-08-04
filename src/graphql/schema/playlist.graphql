@@ -1,0 +1,30 @@
+directive @auth on FIELD_DEFINITION
+directive @createPlaylistValid on FIELD_DEFINITION
+directive @removePlaylistValid on FIELD_DEFINITION
+input playlistCreateReq {
+  playlist_name: String
+  channel_id: String
+}
+input playListRemoveReq {
+  playlist_id: String
+}
+type playListRes {
+  playlist_uuid: String
+  playlist_name: String
+}
+type createPlaylistResponse {
+  status_code: Int
+  message: String
+  data: playListRes
+}
+type deletePlayListRes {
+  status_code: Int
+  message: String
+}
+type Mutation {
+  createPlaylist(input: playlistCreateReq): createPlaylistResponse @auth @createPlaylistValid
+  removePlaylist(input: playListRemoveReq): deletePlayListRes @auth @removePlaylistValid
+}
+type Query {
+  getPlayListByID(input: playListRemoveReq): createPlaylistResponse @auth @removePlaylistValid
+}
