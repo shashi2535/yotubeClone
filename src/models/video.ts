@@ -17,6 +17,7 @@ class Video extends Model<IVideoAttributes, videoInput> implements IVideoAttribu
   public title?: string;
   public video_view?: number;
   public public_id?: string;
+  public duration?: number;
   // timestamps!
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
@@ -44,6 +45,9 @@ Video.init(
     description: {
       type: DataTypes.STRING,
     },
+    duration: {
+      type: DataTypes.INTEGER,
+    },
     type: {
       type: DataTypes.ENUM(VideoTypes.SHORT, VideoTypes.VIDEO),
       defaultValue: null,
@@ -57,6 +61,7 @@ Video.init(
     video_view: {
       type: DataTypes.INTEGER,
     },
+
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,

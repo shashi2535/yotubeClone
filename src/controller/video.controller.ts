@@ -2,12 +2,14 @@ import i18next from 'i18next';
 import { HttpStatus, VideoTypes } from '../constant';
 import { Icontext, ICreateVideo, IdeleteVideo, IUpdateVideo } from '../interface';
 import { Channel, Video } from '../models';
-import { generateUUID, videoStoreInTmpFolder, videoDeleteInCloudinary, videoUploadInCloudinary } from '../utils';
-interface data {
-  secure_url?: string;
-  duration?: string;
-  public_id?: string;
-}
+import {
+  generateUUID,
+  videoStoreInTmpFolder,
+  videoDeleteInCloudinary,
+  videoUploadInCloudinary,
+  convertIntoMiliSecond,
+} from '../utils';
+
 const videoResolverController = {
   createVideo: async (parent: unknown, input: ICreateVideo, context: Icontext) => {
     try {
@@ -16,7 +18,7 @@ const videoResolverController = {
         video_url,
       } = input;
       const { userId } = context;
-      const channelData = await Channel.findOne({ where: { user_id: userId } });
+      const channelData = await Channel.findOne({ where: { user_id: userId }, attributes: { exclude: ['UserId'] } });
       if (!channelData) {
         return {
           status_code: HttpStatus.OK,
@@ -25,9 +27,10 @@ const videoResolverController = {
         };
       }
       const upload: any = await videoStoreInTmpFolder(video_url);
-      const data: data = await videoUploadInCloudinary(upload.path);
+      const data = await videoUploadInCloudinary(upload.path);
       const duration = Number(data.duration).toFixed(2);
-      let type;
+      const milisecond = convertIntoMiliSecond(Number(data?.duration));
+      let type: string;
       if (Number(duration) < 32) {
         type = VideoTypes.SHORT;
       } else {
@@ -36,12 +39,13 @@ const videoResolverController = {
       const videoCreateData = await Video.create({
         title,
         description,
-        channel_id: channelData.id,
+        channel_id: channelData?.id,
         user_id: userId,
         video_url: data?.secure_url,
         video_uuid: generateUUID(),
         type,
         public_id: data.public_id,
+        duration: milisecond,
       });
       return {
         status_code: HttpStatus.OK,

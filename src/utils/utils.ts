@@ -9,6 +9,11 @@ import { join } from 'path';
 import { createWriteStream, readdirSync, readFileSync } from 'fs';
 import { mergeResolvers } from '@graphql-tools/merge';
 export const generateOtp = () => 100000 + Math.floor(Math.random() * 900000);
+interface data {
+  secure_url?: string;
+  duration?: string;
+  public_id?: string;
+}
 const {
   TWILLIO: { ACCOUNT_SID, AUTH_TOKEN, TWILLIO_PHONE_NUMBER },
   EMAIL: { EMAIL_PASSWORD, EMAIL_SERVICE, EMAIL_USERNAME },
@@ -135,7 +140,8 @@ export const videoStoreInTmpFolder = async (upload: any) => {
 };
 
 export const videoUploadInCloudinary = async (path: string) => {
-  const data = await cloudinary.uploader.upload(`${path}`, {
+  // Create a Cloudinary URL generator
+  const data: data = await cloudinary.uploader.upload(`${path}`, {
     folder: 'videos',
     resource_type: 'video',
   });
@@ -145,4 +151,8 @@ export const videoDeleteInCloudinary = async (public_id: string) => {
   // v2.uploader.destroy(public_id);
   const data = await cloudinary.uploader.destroy(public_id, { resource_type: 'video' });
   return data;
+};
+
+export const convertIntoMiliSecond = (second: number) => {
+  return second * 1000;
 };

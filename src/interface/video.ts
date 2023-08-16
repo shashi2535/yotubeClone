@@ -12,6 +12,7 @@ interface IVideoAttributes {
   title?: string;
   public_id?: string;
   video_view?: number;
+  duration?: number;
   Channel?: IchannelAttributes;
   Avtar?: IAvtarAttributes;
   created_at?: Date;
