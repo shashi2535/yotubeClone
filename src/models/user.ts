@@ -121,8 +121,8 @@ Avtar.belongsTo(User, { foreignKey: 'user_id', as: 'User' });
 User.hasOne(Subscribe, { foreignKey: 'subscribed_user_id', as: 'Subscribe' });
 Subscribe.belongsTo(User, { foreignKey: 'subscribed_user_id' });
 
-User.hasOne(Video, { foreignKey: 'user_id', as: 'Video' });
-Video.belongsTo(User, { foreignKey: 'user_id' });
+User.hasOne(Video, { foreignKey: 'user_id', as: 'User_Video' });
+Video.belongsTo(User, { foreignKey: 'user_id', as: 'User_Video' });
 
 User.hasOne(Like, { foreignKey: 'user_id', as: 'Like' });
 Like.belongsTo(User, { foreignKey: 'user_id' });

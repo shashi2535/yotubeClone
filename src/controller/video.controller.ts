@@ -2,7 +2,7 @@ import i18next from 'i18next';
 import { logger } from '../config';
 import { HttpStatus, VideoTypes } from '../constant';
 import { Icontext, ICreateVideo, IdeleteVideo, IGetVideo, IUpdateVideo } from '../interface';
-import { Channel, Video } from '../models';
+import { Avtar, Channel, User, Video } from '../models';
 import { SequelizeFilterSortUtil } from '../service';
 import {
   generateUUID,
@@ -197,7 +197,27 @@ const videoQueryController = {
       const query = { ...input.input };
       query.fields = 'video_uuid, title, type';
       const filterSortUtil = new SequelizeFilterSortUtil(Video);
-      const filteredAndSortedProducts = await filterSortUtil.filterSort(query);
+      const filteredAndSortedProducts = await filterSortUtil.filterSort(query, {
+        include: [
+          {
+            model: User,
+            attributes: ['email', 'phone', 'user_uuid', 'first_name', 'last_name'],
+            required: false,
+            as: 'User_Video',
+          },
+          {
+            model: Channel,
+            required: false,
+            as: 'Channel_Video',
+            attributes: { exclude: ['UserId', 'created_at', 'updated_at', 'user_id', 'id', 'is_verified'] },
+            include: {
+              model: Avtar,
+              as: 'Avtar',
+              attributes: ['avtar_url', 'image_uuid', 'public_id'],
+            },
+          },
+        ],
+      });
       // console.log('result>>>>>>>>video controller', filteredAndSortedProducts);
       // process.exit();
     } catch (err: unknown) {

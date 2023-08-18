@@ -1,13 +1,14 @@
 /* eslint-disable indent */
 /* eslint-disable no-console */
-import { Model, FindOptions, Op } from 'sequelize';
+import { FindOptions, Op } from 'sequelize';
+import { logger } from '../config';
 class SequelizeFilterSortUtil {
   private model: any;
 
   constructor(model: any) {
     this.model = model;
   }
-  async filterSort(options: any) {
+  async filterSort(options: any, populateData: any) {
     const queryObj = { ...options };
     //! for filtering using this method
     const excludedFields = ['page', 'sort', 'limit', 'fields'];
@@ -42,14 +43,10 @@ class SequelizeFilterSortUtil {
       // <<<<< for exect data >>>>>>>
       raw: true,
       nest: true,
+      ...populateData,
     };
-    try {
-      const results = await this.model.findAll(queryOptions);
-      return results;
-    } catch (error) {
-      console.log('errr', error);
-      throw new Error('Error fetching data.');
-    }
+    const results = await this.model.findAll(queryOptions);
+    return results;
   }
 }
 export { SequelizeFilterSortUtil };
