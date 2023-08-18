@@ -1,6 +1,6 @@
 import i18next from 'i18next';
 import * as yup from 'yup';
-import { Like_types } from '../constant';
+import { Like_types, VideoTypes } from '../constant';
 // i18next.t('STATUS.INVALID_EMAIL');
 
 const phone = yup
@@ -41,6 +41,12 @@ const type = yup.string().required(i18next.t('STATUS.TYPE_IS_REQUIRED')).oneOf([
 const sub_comment_id = yup.string().required('sub_comment_id is required');
 const playlist_name = yup.string().required('playlist_name is required');
 const playlist_id = yup.string().required('playlist_id is required');
+const duration = yup.number().required('duration is required');
+// for filtering pagination sorting searching
+const page = yup.number();
+const limit = yup.number();
+const sort = yup.string();
+const search = yup.string();
 
 export const UserRegisterationRules = yup.object().shape({
   password,
@@ -126,3 +132,21 @@ export const createPlaylistRule = yup.object().shape({
 export const removePlaylistRule = yup.object().shape({
   playlist_id,
 });
+
+export const createVideoTrackRule = yup.object().shape({
+  duration,
+  video_id,
+});
+
+export const getVideoRule = yup
+  .object()
+  .shape({
+    page,
+    limit,
+    sort,
+    search,
+    type: yup.string().oneOf([VideoTypes.SHORT, VideoTypes.VIDEO]),
+    title: yup.string(),
+    video_uuid: yup.string(),
+  })
+  .noUnknown();

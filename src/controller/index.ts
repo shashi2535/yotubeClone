@@ -6,3 +6,4 @@ export * from './like.controller';
 export * from './comment.controller';
 export * from './subComment.controller';
 export * from './playlist.controller';
+export * from './video_track.controller';

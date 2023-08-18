@@ -131,6 +131,8 @@
     "INVALID_PLAYLIST_ID": "Invalid Playlist Id.",
     "NO_PLAYLIST_FOUND": "No Playlist Found.",
     "PLAYLIST_SUCCESSFULLY": "Got Playlist Successfully.",
-    "PLAYLIST_DELETED_SUCCESSFULLY": "Playlist Deleted Successfully."
+    "PLAYLIST_DELETED_SUCCESSFULLY": "Playlist Deleted Successfully.",
+    "VIDEO_TRACK_CREATED_SUCCESSFULLY": "Video Track Created Successfully.",
+    "VIDEO_TRACK_UPDATED_SUCCESSFULLY": "Video_track Updated Successfully."
   }
 }

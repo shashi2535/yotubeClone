@@ -49,7 +49,17 @@ const expressServer = async () => {
   // Hand in the schema we just created and have the
   // WebSocketServer start listening.
   const serverCleanup = useServer({ schema }, wsServer);
-
+  const setHttpPlugin = {
+    async requestDidStart() {
+      return {
+        async willSendResponse({ response }: any) {
+          response.http.status = response?.data?.create_video_track?.status_code
+            ? response?.data?.create_video_track?.status_code
+            : response?.errors && response?.errors[0].status_code;
+        },
+      };
+    },
+  };
   const server = new ApolloServer({
     schema,
     context: async ({ req }: any) => {
@@ -59,18 +69,19 @@ const expressServer = async () => {
       }
     },
     formatError: (err: any): any => {
+      console.log('err', err);
       return {
         message: err.message,
-        status_code: 500,
+        status_code: 400,
       };
-      // throw new ApolloError(err.message);
     },
     csrfPrevention: false,
     cache: 'bounded',
     plugins: [
       // Proper shutdown for the HTTP server.
       ApolloServerPluginDrainHttpServer({ httpServer }),
-
+      setHttpPlugin,
+      // ApolloServerPluginLandingPageLocalDefault({ embed: true }),
       // Proper shutdown for the WebSocket server.
       {
         async serverWillStart() {

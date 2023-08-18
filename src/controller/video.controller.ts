@@ -1,7 +1,9 @@
 import i18next from 'i18next';
+import { logger } from '../config';
 import { HttpStatus, VideoTypes } from '../constant';
-import { Icontext, ICreateVideo, IdeleteVideo, IUpdateVideo } from '../interface';
+import { Icontext, ICreateVideo, IdeleteVideo, IGetVideo, IUpdateVideo } from '../interface';
 import { Channel, Video } from '../models';
+import { SequelizeFilterSortUtil } from '../service';
 import {
   generateUUID,
   videoStoreInTmpFolder,
@@ -188,6 +190,25 @@ const videoResolverController = {
     }
   },
 };
-const videoQueryController = {};
+const videoQueryController = {
+  getVideo: async (parent: unknown, input: IGetVideo, context: Icontext) => {
+    try {
+      logger.info('get video app');
+      const query = { ...input.input };
+      query.fields = 'video_uuid, title, type';
+      const filterSortUtil = new SequelizeFilterSortUtil(Video);
+      const filteredAndSortedProducts = await filterSortUtil.filterSort(query);
+      // console.log('result>>>>>>>>video controller', filteredAndSortedProducts);
+      // process.exit();
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          message: err.message,
+          status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        };
+      }
+    }
+  },
+};
 
 export { videoQueryController, videoResolverController };

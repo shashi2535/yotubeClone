@@ -1,5 +1,3 @@
-import { randomInt } from 'crypto';
-
 export const isEmpty = (value: string | number | object): boolean => {
   if (value === null) {
     return true;
@@ -57,3 +55,5 @@ export const isFunction = (val: string): boolean => typeof val === 'function';
 export const isString = (val: string): boolean => typeof val === 'string';
 export const isNumber = (val: string): boolean => typeof val === 'number';
 export const isConstructor = (val: string): boolean => val === 'constructor';
+
+export * from './query.service';

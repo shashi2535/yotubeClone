@@ -1,0 +1,24 @@
+directive @auth on FIELD_DEFINITION
+directive @videoTrackCreateValid on FIELD_DEFINITION
+
+input create_video_track_req {
+  video_id: String
+  duration: Int
+}
+type video_track {
+  user_id: String
+  start_time: Int
+  end_time: Int
+  video_track_uuid: String
+  video_id: String
+}
+
+type video_track_res {
+  status_code: Int
+  message: String
+  data: video_track
+}
+
+type Mutation {
+  create_video_track(input: create_video_track_req): video_track_res @auth @videoTrackCreateValid
+}

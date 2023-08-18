@@ -6,3 +6,4 @@ export * from './video';
 export * from './like';
 export * from './comment';
 export * from './playlist';
+export * from './video_track';

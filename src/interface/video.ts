@@ -42,5 +42,17 @@ interface IUpdateVideo {
     description: string;
   };
 }
+interface IGetVideo {
+  input: {
+    page?: number;
+    limit?: number;
+    sort?: string;
+    search?: string;
+    type?: string;
+    title?: string;
+    video_uuid?: string;
+    fields?: string;
+  };
+}
 
-export { IVideoAttributes, ICreateVideo, IdeleteVideo, IUpdateVideo };
+export { IVideoAttributes, ICreateVideo, IdeleteVideo, IUpdateVideo, IGetVideo };

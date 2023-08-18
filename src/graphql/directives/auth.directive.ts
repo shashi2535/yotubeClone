@@ -21,6 +21,8 @@ import {
   likeCreateOnCommentRule,
   createPlaylistRule,
   removePlaylistRule,
+  createVideoTrackRule,
+  getVideoRule,
 } from '../../validation';
 import {
   IloginInput,
@@ -39,6 +41,8 @@ import {
   ILikeOnComment,
   IPlaylistCreateAttributes,
   IDeletePlayListAttributes,
+  IcreateVideoTrack,
+  IGetVideo,
 } from '../../interface';
 import i18next from 'i18next';
 import { validateUUID } from '../../utils';
@@ -699,8 +703,67 @@ const removePlaylistValidateMiddleware = (schema: GraphQLSchema, directiveName: 
     },
   });
 };
+const videoTrackValidationMiddleware = (schema: GraphQLSchema, directiveName: any) => {
+  return mapSchema(schema, {
+    // Executes once for each object field definition in the schema
+    [MapperKind.OBJECT_FIELD]: (fieldConfig: any) => {
+      const deprecatedDirective = getDirective(schema, fieldConfig, directiveName)?.[0];
+      if (deprecatedDirective) {
+        // Get this field's original resolver
+        const { resolve = defaultFieldResolver } = fieldConfig;
+        fieldConfig.resolve = async function (source: unknown, args: IcreateVideoTrack, Icontext: any, info: unknown) {
+          if (Object.keys(args).length === 0) {
+            return {
+              message: i18next.t('STATUS.INVALID_INPUT'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
+          const { duration, video_id } = args.input;
+          logger.info(`input in videoTrackValidationMiddleware validation>>> ${JSON.stringify(args)}`);
+          await createVideoTrackRule.validate({ video_id, duration });
+          if (!validateUUID(String(video_id))) {
+            return {
+              message: i18next.t('STATUS.INVALID_VIDEO_ID'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
+          const result = await resolve(source, args, Icontext, info);
+          return result;
+        };
+        return fieldConfig;
+      }
+    },
+  });
+};
 
-// updateVideoRule;
+const getVideoValidationMiddleware = (schema: GraphQLSchema, directiveName: any) => {
+  return mapSchema(schema, {
+    // Executes once for each object field definition in the schema
+    [MapperKind.OBJECT_FIELD]: (fieldConfig: any) => {
+      const deprecatedDirective = getDirective(schema, fieldConfig, directiveName)?.[0];
+      if (deprecatedDirective) {
+        // Get this field's original resolver
+        const { resolve = defaultFieldResolver } = fieldConfig;
+        fieldConfig.resolve = async function (source: unknown, args: IGetVideo, Icontext: any, info: unknown) {
+          logger.info(`input in getVideoValidationMiddleware validation>>> ${JSON.stringify(args)}`);
+          await getVideoRule.validate(args.input, { abortEarly: false });
+          if (args?.input?.video_uuid) {
+            if (!validateUUID(String(args.input.video_uuid))) {
+              return {
+                message: i18next.t('STATUS.INVALID_VIDEO_ID'),
+                status_code: HttpStatus.BAD_REQUEST,
+              };
+            }
+          }
+          const result = await resolve(source, args, Icontext, info);
+          return result;
+        };
+        return fieldConfig;
+      }
+    },
+  });
+};
+
 export {
   AuthMiddleware,
   loginValidateMiddleware,
@@ -723,4 +786,6 @@ export {
   createLikeOnCommentValidateMiddleware,
   createPlaylistValidateMiddleware,
   removePlaylistValidateMiddleware,
+  videoTrackValidationMiddleware,
+  getVideoValidationMiddleware,
 };

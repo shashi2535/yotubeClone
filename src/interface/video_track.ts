@@ -10,4 +10,11 @@ interface IvideoTrackAttributes {
   updated_at?: Date;
 }
 
-export { IvideoTrackAttributes };
+interface IcreateVideoTrack {
+  input: {
+    video_id?: string;
+    duration?: number;
+  };
+}
+
+export { IvideoTrackAttributes, IcreateVideoTrack };

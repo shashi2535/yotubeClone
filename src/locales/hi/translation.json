@@ -131,6 +131,8 @@
     "INVALID_PLAYLIST_ID": "अमान्य प्लेलिस्ट आईडी.",
     "NO_PLAYLIST_FOUND": "कोई प्लेलिस्ट नहीं मिली.",
     "PLAYLIST_SUCCESSFULLY": "प्लेलिस्ट सफलतापूर्वक मिल गई.",
-    "PLAYLIST_DELETED_SUCCESSFULLY": "प्लेलिस्ट सफलतापूर्वक हटा दी गई."
+    "PLAYLIST_DELETED_SUCCESSFULLY": "प्लेलिस्ट सफलतापूर्वक हटा दी गई.",
+    "VIDEO_TRACK_CREATED_SUCCESSFULLY": "वीडियो ट्रैक सफलतापूर्वक बनाया गया.",
+    "VIDEO_TRACK_UPDATED_SUCCESSFULLY": "वीडियो_ट्रैक सफलतापूर्वक अपडेट किया गया."
   }
 }
