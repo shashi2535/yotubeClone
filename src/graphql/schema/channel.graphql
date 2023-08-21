@@ -59,14 +59,26 @@ type verifiedChannelByAdminRes {
   message: String
   status_code: Int
 }
+input verifiedChannelByAdminReq {
+  channel_id: String
+}
+input createChannelReq {
+  channel_name: String!
+  handle: String!
+}
+input updateChannelReq {
+  channel_name: String
+  handle: String
+}
 
 type Mutation {
-  createChannel(channel_name: String!, handle: String!, profile_picture: Upload): createChannelResponse
-    @auth
-    @avtarValid
-  updateChannel(channel_name: String, handle: String, profile_picture: Upload): createChannelResponse @auth @avtarValid
+  createChannel(input: createChannelReq, profile_picture: Upload): createChannelResponse @auth @avtarValid
+  updateChannel(input: updateChannelReq, profile_picture: Upload): createChannelResponse @auth @avtarValid
   deleteChannel: createChannelResponse @auth
-  verifiedChannelByAdmin(channel_id: String): verifiedChannelByAdminRes @auth @roleCheck @verifyChannelValid
+  verifiedChannelByAdmin(input: verifiedChannelByAdminReq): verifiedChannelByAdminRes
+    @auth
+    @roleCheck
+    @verifyChannelValid
 }
 type Subscription {
   createEvent: Boolean

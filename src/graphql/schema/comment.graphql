@@ -59,6 +59,9 @@ type getCommentRes {
   message: String
   data: [getcomentResponse]
 }
+input getCommentOnVideoReq {
+  video_id: String!
+}
 
 type Mutation {
   createComment(input: createCommentReq): createCommentResponse @auth @createCommentValid
@@ -68,5 +71,5 @@ type Mutation {
 }
 
 type Query {
-  getCommentByVideoId(video_id: String!): getCommentRes @auth @videoDeleteValid
+  getCommentByVideoId(input: getCommentOnVideoReq!): getCommentRes @auth @videoDeleteValid
 }

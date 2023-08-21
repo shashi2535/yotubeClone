@@ -138,15 +138,17 @@ export const createVideoTrackRule = yup.object().shape({
   video_id,
 });
 
-export const getVideoRule = yup
-  .object()
-  .shape({
-    page,
-    limit,
-    sort,
-    search,
-    type: yup.string().oneOf([VideoTypes.SHORT, VideoTypes.VIDEO]),
-    title: yup.string(),
-    video_uuid: yup.string(),
-  })
-  .noUnknown();
+export const getVideoRule = yup.object().shape({
+  page,
+  limit,
+  sort,
+  search,
+  type: yup.string().oneOf([VideoTypes.SHORT, VideoTypes.VIDEO]),
+  title: yup.string(),
+  video_uuid: yup.string(),
+});
+
+export const createChannelRule = yup.object().shape({
+  channel_name: yup.string().trim().min(1, 'channel_name should have atleast 5 characters.'),
+  handle: yup.string().trim().min(1, 'channel_name should have atleast 5 characters.'),
+});

@@ -115,17 +115,17 @@ User.init(
 User.hasOne(Channel, { foreignKey: 'user_id' });
 Channel.belongsTo(User), { foreignKey: 'user_id', as: 'User' };
 
-User.hasOne(Avtar, { foreignKey: 'user_id' });
-Avtar.belongsTo(User, { foreignKey: 'user_id', as: 'User' });
+User.hasOne(Avtar, { foreignKey: 'user_id', as: 'User_Avtar' });
+Avtar.belongsTo(User, { foreignKey: 'user_id', as: 'User_Avtar' });
 
-User.hasOne(Subscribe, { foreignKey: 'subscribed_user_id', as: 'Subscribe' });
-Subscribe.belongsTo(User, { foreignKey: 'subscribed_user_id' });
+User.hasOne(Subscribe, { foreignKey: 'subscribed_user_id', as: 'User_Subscribe' });
+Subscribe.belongsTo(User, { foreignKey: 'subscribed_user_id', as: 'User_Subscribe' });
 
 User.hasOne(Video, { foreignKey: 'user_id', as: 'User_Video' });
 Video.belongsTo(User, { foreignKey: 'user_id', as: 'User_Video' });
 
-User.hasOne(Like, { foreignKey: 'user_id', as: 'Like' });
-Like.belongsTo(User, { foreignKey: 'user_id' });
+User.hasOne(Like, { foreignKey: 'user_id', as: 'User_Like' });
+Like.belongsTo(User, { foreignKey: 'user_id', as: 'User_Like' });
 
 User.hasOne(Comment, { foreignKey: 'user_id', as: 'User_Comment' });
 Comment.belongsTo(User, { foreignKey: 'user_id', as: 'User_Comment' });

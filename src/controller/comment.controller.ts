@@ -236,7 +236,7 @@ const commentResolverController = {
 const commentQueryController = {
   getCommentByVideoId: async (parent: unknown, input: IdeleteVideo, context: Icontext) => {
     try {
-      const { video_id } = input;
+      const { video_id } = input.input;
       const comment: any = await Comment.findAll({
         where: { video_uuid: video_id },
         raw: true,

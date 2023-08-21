@@ -1,14 +1,21 @@
 import { logger } from '../config';
 import { HttpStatus } from '../constant';
-import { Icontext, IcreateChannel, IchannelAttributes, IdeleteChannel, IupdateChannel } from '../interface/';
+import {
+  Icontext,
+  ICreateChannelReq,
+  IchannelAttributes,
+  IdeleteChannel,
+  IverifiedChannelByAdmin,
+} from '../interface/';
 import { User, Channel, Avtar, Subscribe } from '../models';
 import { generateUUID, picStoreInTmpFolder, picUpdatedInCloudinary, picUploadInCloudinary } from '../utils';
 import i18next from 'i18next';
 
 const channelResolverController = {
-  createChannel: async (parent: unknown, input: IcreateChannel, context: Icontext) => {
+  createChannel: async (parent: unknown, input: ICreateChannelReq, context: Icontext) => {
     try {
-      const { channel_name, handle, profile_picture } = input;
+      const { channel_name, handle } = input.input;
+      const { profile_picture } = input;
       const { userId, user_uuid } = context;
       const channelData = await Channel.findOne({ where: { user_id: userId } });
       if (channelData) {
@@ -79,17 +86,18 @@ const channelResolverController = {
       }
     }
   },
-  updateChannel: async (paraent: unknown, input: IcreateChannel, context: Icontext) => {
+  updateChannel: async (paraent: unknown, input: ICreateChannelReq, context: Icontext) => {
     try {
-      const { channel_name, handle, profile_picture } = input;
+      logger.info(JSON.stringify(input));
+      const { profile_picture } = input;
       const { userId, user_uuid } = context;
-
       const channelData: IchannelAttributes = await Channel.findOne({
         where: { user_id: userId },
         rejectOnEmpty: true,
         include: { model: Avtar, attributes: ['public_id'], as: 'Avtar' },
         raw: true,
         nest: true,
+        attributes: { exclude: ['UserId'] },
       });
       if (!channelData) {
         return {
@@ -97,11 +105,10 @@ const channelResolverController = {
           status_code: HttpStatus.BAD_REQUEST,
         };
       }
-      logger.info(JSON.stringify(input));
-      if ((channel_name || handle) && !profile_picture) {
+      if ((input?.input?.channel_name || input?.input?.handle) && !profile_picture) {
         logger.info('only body');
         await Channel.update(
-          { handle, channel_name },
+          { handle: input?.input?.handle, channel_name: input?.input?.channel_name },
           {
             where: {
               user_id: userId,
@@ -113,6 +120,7 @@ const channelResolverController = {
             user_id: userId,
           },
           include: [{ model: Avtar, attributes: ['avtar_url'], as: 'Avtar' }],
+          attributes: { exclude: ['UserId'] },
         })) as any;
         return {
           status_code: HttpStatus.OK,
@@ -127,24 +135,35 @@ const channelResolverController = {
             url: updatedChanelData?.Avtar?.avtar_url,
           },
         };
-      } else if (profile_picture && !channel_name && !handle) {
+      } else if (profile_picture && !input?.input?.channel_name && !input?.input?.handle) {
         logger.info('only profile pic');
 
         const upload: any = await picStoreInTmpFolder(profile_picture);
         const data = await picUpdatedInCloudinary(String(channelData.Avtar?.public_id), upload.path);
-        await Avtar.update(
-          { avtar_url: data.url, public_id: data.public_id },
-          {
-            where: {
-              channel_id: channelData.id,
-            },
-          }
-        );
+        const avtarData = await Avtar.findOne({ where: { channel_id: channelData.id }, raw: true, nest: true });
+        if (avtarData) {
+          await Avtar.update(
+            { avtar_url: data.url, public_id: data.public_id },
+            {
+              where: {
+                channel_id: channelData.id,
+              },
+            }
+          );
+        } else {
+          await Avtar.create({
+            avtar_url: String(data.url),
+            image_uuid: generateUUID(),
+            channel_id: Number(channelData.id),
+            public_id: data.public_id,
+          });
+        }
         const updatedChanelData: IchannelAttributes = (await Channel.findOne({
           where: {
             user_id: userId,
           },
           include: [{ model: Avtar, attributes: ['avtar_url'], as: 'Avtar' }],
+          attributes: { exclude: ['UserId'] },
         })) as any;
 
         return {
@@ -173,7 +192,7 @@ const channelResolverController = {
           }
         );
         await Channel.update(
-          { handle, channel_name },
+          { handle: input?.input?.handle, channel_name: input?.input?.channel_name },
           {
             where: {
               user_id: userId,
@@ -184,6 +203,7 @@ const channelResolverController = {
           where: {
             user_id: userId,
           },
+          attributes: { exclude: ['UserId'] },
         });
         return {
           status_code: HttpStatus.OK,
@@ -241,9 +261,9 @@ const channelResolverController = {
       }
     }
   },
-  verifiedChannelByAdmin: async (paraent: unknown, input: IupdateChannel, context: Icontext) => {
+  verifiedChannelByAdmin: async (paraent: unknown, input: IverifiedChannelByAdmin, context: Icontext) => {
     try {
-      const { channel_id } = input;
+      const { channel_id } = input.input;
       logger.info(`verifiedChannelByAdmin>>>>>>${channel_id}`);
       const channelData = await Channel.findOne({ where: { chanel_uuid: channel_id }, raw: true, nest: true });
       if (!channelData) {

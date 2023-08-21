@@ -69,7 +69,6 @@ const expressServer = async () => {
       }
     },
     formatError: (err: any): any => {
-      console.log('err', err);
       return {
         message: err.message,
         status_code: 400,

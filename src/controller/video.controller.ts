@@ -73,7 +73,7 @@ const videoResolverController = {
   },
   deleteVideo: async (parent: unknown, input: IdeleteVideo, context: Icontext) => {
     try {
-      const { video_id } = input;
+      const { video_id } = input.input;
       const { userId } = context;
       const videoData = await Video.findOne({
         where: { video_uuid: video_id, user_id: userId },
@@ -152,7 +152,7 @@ const videoResolverController = {
   update_video_view: async (parent: unknown, input: IdeleteVideo, context: Icontext) => {
     try {
       const { userId } = context;
-      const { video_id } = input;
+      const { video_id } = input.input;
       const videoData = await Video.findOne({ where: { video_uuid: video_id }, raw: true, nest: true });
       if (!videoData) {
         return {

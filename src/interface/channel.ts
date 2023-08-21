@@ -1,5 +1,6 @@
 import { IAvtarAttributes } from './avtar';
 import { IUserAttributes } from './user';
+import { IVideoFile } from './video';
 
 interface Icontext {
   userId?: number;
@@ -7,11 +8,6 @@ interface Icontext {
   role?: string;
 }
 
-interface IcreateChannel {
-  channel_name?: string;
-  handle?: string;
-  profile_picture?: any;
-}
 interface IchannelAttributes {
   id: number;
   chanel_uuid?: string;
@@ -25,12 +21,20 @@ interface IchannelAttributes {
   User?: IUserAttributes;
   is_verified?: boolean;
 }
+interface IverifiedChannelByAdmin {
+  input: {
+    channel_id: string;
+  };
+}
 
-interface IupdateChannel {
-  channel_id: string;
+interface ICreateChannelReq {
+  input: {
+    channel_name: string;
+    handle: string;
+  };
+  profile_picture?: Promise<IVideoFile>;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IdeleteChannel {}
-
-export { Icontext, IcreateChannel, IchannelAttributes, IdeleteChannel, IupdateChannel };
+export { Icontext, IchannelAttributes, IdeleteChannel, IverifiedChannelByAdmin, ICreateChannelReq };

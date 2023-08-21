@@ -69,8 +69,8 @@ Channel.init(
 Channel.hasOne(Avtar, { foreignKey: 'channel_id', as: 'Avtar' });
 Avtar.belongsTo(Channel, { foreignKey: 'channel_id', as: 'Avtar' });
 
-Channel.hasOne(Subscribe, { foreignKey: 'subscribed_channel_id', as: 'Subscribe' });
-Subscribe.belongsTo(Channel, { foreignKey: 'subscribed_channel_id' });
+Channel.hasOne(Subscribe, { foreignKey: 'subscribed_channel_id', as: 'Channel_Subscribe' });
+Subscribe.belongsTo(Channel, { foreignKey: 'subscribed_channel_id', as: 'Channel_Subscribe' });
 
 Channel.hasOne(Video, { foreignKey: 'channel_id', as: 'Channel_Video' });
 Video.belongsTo(Channel, { foreignKey: 'channel_id', as: 'Channel_Video' });

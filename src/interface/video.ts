@@ -33,7 +33,9 @@ interface ICreateVideo {
 }
 
 interface IdeleteVideo {
-  video_id: string;
+  input: {
+    video_id: string;
+  };
 }
 interface IUpdateVideo {
   input: {
@@ -55,4 +57,4 @@ interface IGetVideo {
   };
 }
 
-export { IVideoAttributes, ICreateVideo, IdeleteVideo, IUpdateVideo, IGetVideo };
+export { IVideoAttributes, ICreateVideo, IdeleteVideo, IUpdateVideo, IGetVideo, IVideoFile };

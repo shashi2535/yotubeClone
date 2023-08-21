@@ -86,12 +86,15 @@ type getVideoRes {
   message: String
   data: [video_data]
 }
+input video_delete_Req {
+  video_id: String!
+}
 
 type Mutation {
   createVideo(input: createVideoInput, video_url: Upload!): createVideoResponse @auth @videoValid
-  deleteVideo(video_id: String!): deleteVideoResponse @auth @videoDeleteValid
+  deleteVideo(input: video_delete_Req): deleteVideoResponse @auth @videoDeleteValid
   updateVideo(input: updateVideoInput): createVideoResponse @auth @videoUpdateValid
-  update_video_view(video_id: String!): VideoViewResponse @auth @videoDeleteValid
+  update_video_view(input: video_delete_Req): VideoViewResponse @auth @videoDeleteValid
 }
 
 type Query {

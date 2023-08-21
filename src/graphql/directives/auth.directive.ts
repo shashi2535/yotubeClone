@@ -23,6 +23,7 @@ import {
   removePlaylistRule,
   createVideoTrackRule,
   getVideoRule,
+  createChannelRule,
 } from '../../validation';
 import {
   IloginInput,
@@ -43,6 +44,9 @@ import {
   IDeletePlayListAttributes,
   IcreateVideoTrack,
   IGetVideo,
+  IverifiedChannelByAdmin,
+  IdeleteVideo,
+  ICreateChannelReq,
 } from '../../interface';
 import i18next from 'i18next';
 import { validateUUID } from '../../utils';
@@ -82,7 +86,7 @@ const imageValidation = (schema: GraphQLSchema, directiveName: any) => {
         const { resolve = defaultFieldResolver } = fieldConfig;
         // Replace the original resolver with a function that *first* calls
         // the original resolver, then converts its result to upper case
-        fieldConfig.resolve = async function (source: unknown, args: any, context: any, info: unknown) {
+        fieldConfig.resolve = async function (source: unknown, args: ICreateChannelReq, context: any, info: unknown) {
           if (Object.keys(args).length === 0) {
             return {
               message: i18next.t('STATUS.INVALID_INPUT'),
@@ -90,7 +94,6 @@ const imageValidation = (schema: GraphQLSchema, directiveName: any) => {
             };
           }
           const file = await args?.profile_picture;
-          // logger.info('image validation', JSON.stringify(file));
           if (file) {
             if (file.mimetype !== MIME_TYPE.FOR_IMAGE) {
               return {
@@ -99,6 +102,7 @@ const imageValidation = (schema: GraphQLSchema, directiveName: any) => {
               };
             }
           }
+          await createChannelRule.validate(args.input);
           return await resolve(source, args, context, info);
         };
         return fieldConfig;
@@ -304,16 +308,21 @@ const verifiedChannelByAdminValidateMiddleware = (schema: GraphQLSchema, directi
       if (deprecatedDirective) {
         // Get this field's original resolver
         const { resolve = defaultFieldResolver } = fieldConfig;
-        fieldConfig.resolve = async function (source: unknown, args: any, Icontext: any, info: unknown) {
+        fieldConfig.resolve = async function (
+          source: unknown,
+          args: IverifiedChannelByAdmin,
+          Icontext: any,
+          info: unknown
+        ) {
           if (Object.keys(args).length === 0) {
             return {
               message: i18next.t('STATUS.INVALID_INPUT'),
               status_code: HttpStatus.BAD_REQUEST,
             };
           }
-          logger.info(`input in verifiedChannelByAdminValidateMiddleware validation>>> ${JSON.stringify(args)}`);
-          await verifiedChannelByAdminRule.validate(args);
-          if (!validateUUID(args.channel_id)) {
+          logger.info(`input in verifiedChannelByAdminValidateMiddleware validation>>> ${JSON.stringify(args.input)}`);
+          await verifiedChannelByAdminRule.validate(args.input);
+          if (!validateUUID(args.input.channel_id)) {
             return {
               message: i18next.t('STATUS.IVALID_CHANNEL_ID'),
               status_code: HttpStatus.BAD_REQUEST,
@@ -335,7 +344,7 @@ const videoDeleteValidateMiddleware = (schema: GraphQLSchema, directiveName: any
       if (deprecatedDirective) {
         // Get this field's original resolver
         const { resolve = defaultFieldResolver } = fieldConfig;
-        fieldConfig.resolve = async function (source: unknown, args: any, Icontext: any, info: unknown) {
+        fieldConfig.resolve = async function (source: unknown, args: IdeleteVideo, Icontext: any, info: unknown) {
           if (Object.keys(args).length === 0) {
             return {
               message: i18next.t('STATUS.INVALID_INPUT'),
@@ -343,8 +352,8 @@ const videoDeleteValidateMiddleware = (schema: GraphQLSchema, directiveName: any
             };
           }
           logger.info(`input in videoDeleteValidateMiddleware validation>>> ${JSON.stringify(args)}`);
-          await videoUpdateRule.validate(args);
-          if (!validateUUID(args.video_id)) {
+          await videoUpdateRule.validate(args.input);
+          if (!validateUUID(args.input.video_id)) {
             return {
               message: i18next.t('STATUS.INVALID_VIDEO_ID'),
               status_code: HttpStatus.BAD_REQUEST,
@@ -746,6 +755,15 @@ const getVideoValidationMiddleware = (schema: GraphQLSchema, directiveName: any)
         const { resolve = defaultFieldResolver } = fieldConfig;
         fieldConfig.resolve = async function (source: unknown, args: IGetVideo, Icontext: any, info: unknown) {
           logger.info(`input in getVideoValidationMiddleware validation>>> ${JSON.stringify(args)}`);
+          // const arr = ['sort'];
+          // for (const ele in args.input) {
+          //   if (!arr.includes(ele)) {
+          //     return {
+          //       message: `${ele} Is Not Allowed.`,
+          //       status_code: HttpStatus.BAD_REQUEST,
+          //     };
+          //   }
+          // }
           await getVideoRule.validate(args.input, { abortEarly: false });
           if (args?.input?.video_uuid) {
             if (!validateUUID(String(args.input.video_uuid))) {
