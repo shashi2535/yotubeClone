@@ -198,6 +198,17 @@ const videoQueryController = {
       query.fields = 'video_uuid, title, type';
       const filterSortUtil = new SequelizeFilterSortUtil(Video);
       const filteredAndSortedProducts = await filterSortUtil.filterSort(query, {
+        attributes: [
+          'video_uuid',
+          'video_url',
+          'description',
+          'type',
+          'duration',
+          'title',
+          'public_id',
+          'video_view',
+          'created_at',
+        ],
         include: [
           {
             model: User,
@@ -218,8 +229,11 @@ const videoQueryController = {
           },
         ],
       });
-      // console.log('result>>>>>>>>video controller', filteredAndSortedProducts);
-      // process.exit();
+      return {
+        status_code: HttpStatus.OK,
+        message: 'Get Video Data Successfully',
+        data: filteredAndSortedProducts,
+      };
     } catch (err: unknown) {
       if (err instanceof Error) {
         return {

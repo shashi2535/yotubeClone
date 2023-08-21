@@ -49,9 +49,42 @@ input getVideoReq {
   title: String
   video_uuid: String
 }
+type User_Video {
+  email: String
+  phone: String
+  user_uuid: String
+  first_name: String
+  last_name: String
+}
+type Video_Avtar {
+  avtar_url: String
+  image_uuid: String
+}
+type Channel_Video {
+  discription: String
+  handle: String
+  channel_name: String
+  chanel_uuid: String
+  Avtar: Video_Avtar
+}
+type video_data {
+  video_uuid: String
+  video_url: String
+  description: String
+  type: String
+  duration: Int
+  title: String
+  public_id: String
+  video_view: Int
+  created_at: String
+  User_Video: User_Video
+  Channel_Video: Channel_Video
+}
+
 type getVideoRes {
   status_code: Int
   message: String
+  data: [video_data]
 }
 
 type Mutation {
