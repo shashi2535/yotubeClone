@@ -1,7 +1,7 @@
 import i18next from 'i18next';
 import { logger } from '../config';
 import { HttpStatus, VideoTypes } from '../constant';
-import { Icontext, ICreateVideo, IdeleteVideo, IGetVideo, IUpdateVideo } from '../interface';
+import { Icontext, ICreateVideo, IdeleteVideo, IGetVideo, INextPreviousVideo, IUpdateVideo } from '../interface';
 import { Avtar, Channel, User, Video } from '../models';
 import { SequelizeFilterSortUtil } from '../service';
 import {
@@ -28,6 +28,13 @@ const videoResolverController = {
           data: null,
         };
       }
+      const videoData = await Video.findAll({ raw: true, nest: true, order: [['created_at', 'DESC']] });
+      let video_position: number;
+      if (videoData.length === 0) {
+        video_position = 1;
+      } else {
+        video_position = Number(videoData[0].video_position) + 1;
+      }
       const upload: any = await videoStoreInTmpFolder(video_url);
       const data = await videoUploadInCloudinary(upload.path);
       const duration = Number(data.duration).toFixed(2);
@@ -48,6 +55,7 @@ const videoResolverController = {
         type,
         public_id: data.public_id,
         duration: milisecond,
+        video_position,
       });
       return {
         status_code: HttpStatus.OK,
@@ -208,6 +216,7 @@ const videoQueryController = {
           'public_id',
           'video_view',
           'created_at',
+          'video_position',
         ],
         include: [
           {
@@ -242,6 +251,73 @@ const videoQueryController = {
         };
       }
     }
+  },
+  nextVideo: async (parent: unknown, input: INextPreviousVideo, context: Icontext) => {
+    const { video_id, type } = input.input;
+    const videoData = await Video.findOne({
+      where: { video_uuid: video_id },
+      raw: true,
+      nest: true,
+    });
+    if (!videoData) {
+      return {
+        message: i18next.t('STATUS.VIDEO_NOT_FOUND'),
+        status_code: HttpStatus.BAD_REQUEST,
+        data: null,
+      };
+    }
+    const video_position: number =
+      type === 'previous' ? Number(videoData.video_position) - 1 : Number(videoData.video_position) + 1;
+    const next_video_data = await Video.findOne({
+      where: { video_position },
+      raw: true,
+      nest: true,
+      attributes: [
+        'video_uuid',
+        'video_url',
+        'description',
+        'type',
+        'duration',
+        'title',
+        'public_id',
+        'video_view',
+        'created_at',
+        'video_position',
+      ],
+      include: [
+        {
+          model: User,
+          attributes: ['email', 'phone', 'user_uuid', 'first_name', 'last_name'],
+          required: false,
+          as: 'User_Video',
+        },
+        {
+          model: Channel,
+          required: false,
+          as: 'Channel_Video',
+          attributes: { exclude: ['UserId', 'created_at', 'updated_at', 'user_id', 'id', 'is_verified'] },
+          include: [
+            {
+              model: Avtar,
+              as: 'Avtar',
+              attributes: ['avtar_url', 'image_uuid', 'public_id'],
+            },
+          ],
+        },
+      ],
+    });
+    if (!next_video_data) {
+      return {
+        status_code: HttpStatus.BAD_REQUEST,
+        message: type === 'previous' ? 'No previous Video Found.' : 'No Next Video Found.',
+        data: null,
+      };
+    }
+    return {
+      status_code: HttpStatus.OK,
+      message: 'Get Next Video Data Successfully',
+      data: next_video_data,
+    };
   },
 };
 

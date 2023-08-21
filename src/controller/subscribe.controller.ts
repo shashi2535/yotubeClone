@@ -21,6 +21,7 @@ const subscribeResolverController = {
         ],
         raw: true,
         nest: true,
+        attributes: { exclude: ['UserId'] },
       })) as IchannelAttributes;
       if (!channelData) {
         return {

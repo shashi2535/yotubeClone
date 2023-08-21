@@ -18,6 +18,7 @@ class Video extends Model<IVideoAttributes, videoInput> implements IVideoAttribu
   public video_view?: number;
   public public_id?: string;
   public duration?: number;
+  public video_position?: number;
   // timestamps!
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
@@ -37,6 +38,9 @@ Video.init(
       type: DataTypes.INTEGER,
     },
     user_id: {
+      type: DataTypes.INTEGER,
+    },
+    video_position: {
       type: DataTypes.INTEGER,
     },
     video_url: {

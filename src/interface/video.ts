@@ -11,6 +11,7 @@ interface IVideoAttributes {
   type?: string;
   title?: string;
   public_id?: string;
+  video_position?: number;
   video_view?: number;
   duration?: number;
   Channel?: IchannelAttributes;
@@ -56,5 +57,10 @@ interface IGetVideo {
     fields?: string;
   };
 }
-
-export { IVideoAttributes, ICreateVideo, IdeleteVideo, IUpdateVideo, IGetVideo, IVideoFile };
+interface INextPreviousVideo {
+  input: {
+    video_id: string;
+    type: string;
+  };
+}
+export { IVideoAttributes, ICreateVideo, IdeleteVideo, IUpdateVideo, IGetVideo, IVideoFile, INextPreviousVideo };

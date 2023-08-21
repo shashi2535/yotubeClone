@@ -3,6 +3,7 @@ directive @videoValid on FIELD_DEFINITION
 directive @videoDeleteValid on FIELD_DEFINITION
 directive @videoUpdateValid on FIELD_DEFINITION
 directive @getVideoValid on FIELD_DEFINITION
+directive @nextPrevVideoValid on FIELD_DEFINITION
 scalar Upload
 input createVideoInput {
   title: String
@@ -68,6 +69,7 @@ type Channel_Video {
   Avtar: Video_Avtar
 }
 type video_data {
+  video_position: Int
   video_uuid: String
   video_url: String
   description: String
@@ -86,8 +88,17 @@ type getVideoRes {
   message: String
   data: [video_data]
 }
+type nextVideoRes {
+  status_code: Int
+  message: String
+  data: video_data
+}
 input video_delete_Req {
   video_id: String!
+}
+input video_nextPrev_Req {
+  video_id: String!
+  type: String!
 }
 
 type Mutation {
@@ -99,4 +110,5 @@ type Mutation {
 
 type Query {
   getVideo(input: getVideoReq): getVideoRes @auth @getVideoValid
+  nextVideo(input: video_nextPrev_Req): nextVideoRes @auth @nextPrevVideoValid
 }

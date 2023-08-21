@@ -24,13 +24,14 @@ import {
   removePlaylistValidateMiddleware,
   videoTrackValidationMiddleware,
   getVideoValidationMiddleware,
+  nextPreviousVideoValidationMiddleware,
 } from '../graphql/directives';
 let schema = makeExecutableSchema({
   typeDefs: typedef,
   resolvers,
 });
 // new midleware is priority first for calling
-
+schema = nextPreviousVideoValidationMiddleware(schema, 'nextPrevVideoValid');
 schema = getVideoValidationMiddleware(schema, 'getVideoValid');
 schema = videoTrackValidationMiddleware(schema, 'videoTrackCreateValid');
 schema = removePlaylistValidateMiddleware(schema, 'removePlaylistValid');

@@ -152,3 +152,8 @@ export const createChannelRule = yup.object().shape({
   channel_name: yup.string().trim().min(1, 'channel_name should have atleast 5 characters.'),
   handle: yup.string().trim().min(1, 'channel_name should have atleast 5 characters.'),
 });
+
+export const nextPrevVideoRule = yup.object().shape({
+  video_id,
+  type: yup.string().oneOf(['next', 'previous']).required('Type Is Required.'),
+});

@@ -24,6 +24,7 @@ import {
   createVideoTrackRule,
   getVideoRule,
   createChannelRule,
+  nextPrevVideoRule,
 } from '../../validation';
 import {
   IloginInput,
@@ -47,6 +48,7 @@ import {
   IverifiedChannelByAdmin,
   IdeleteVideo,
   ICreateChannelReq,
+  INextPreviousVideo,
 } from '../../interface';
 import i18next from 'i18next';
 import { validateUUID } from '../../utils';
@@ -781,7 +783,37 @@ const getVideoValidationMiddleware = (schema: GraphQLSchema, directiveName: any)
     },
   });
 };
-
+const nextPreviousVideoValidationMiddleware = (schema: GraphQLSchema, directiveName: any) => {
+  return mapSchema(schema, {
+    // Executes once for each object field definition in the schema
+    [MapperKind.OBJECT_FIELD]: (fieldConfig: any) => {
+      const deprecatedDirective = getDirective(schema, fieldConfig, directiveName)?.[0];
+      if (deprecatedDirective) {
+        // Get this field's original resolver
+        const { resolve = defaultFieldResolver } = fieldConfig;
+        fieldConfig.resolve = async function (source: unknown, args: INextPreviousVideo, Icontext: any, info: unknown) {
+          logger.info(`input in nextPreviousVideoValidationMiddleware validation>>> ${JSON.stringify(args)}`);
+          if (Object.keys(args).length === 0) {
+            return {
+              message: i18next.t('STATUS.INVALID_INPUT'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
+          await nextPrevVideoRule.validate(args.input, { abortEarly: false });
+          if (!validateUUID(String(args.input.video_id))) {
+            return {
+              message: i18next.t('STATUS.INVALID_VIDEO_ID'),
+              status_code: HttpStatus.BAD_REQUEST,
+            };
+          }
+          const result = await resolve(source, args, Icontext, info);
+          return result;
+        };
+        return fieldConfig;
+      }
+    },
+  });
+};
 export {
   AuthMiddleware,
   loginValidateMiddleware,
@@ -806,4 +838,5 @@ export {
   removePlaylistValidateMiddleware,
   videoTrackValidationMiddleware,
   getVideoValidationMiddleware,
+  nextPreviousVideoValidationMiddleware,
 };
