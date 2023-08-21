@@ -53,7 +53,7 @@ type SubCommentForComment {
 type subCommentRes {
   sub_comment_uuid: String
   sub_comment: String
-  Comment: SubCommentForComment
+  SubComment_Comment: SubCommentForComment
   User_Sub_Comment: SubCommentForUser
 }
 

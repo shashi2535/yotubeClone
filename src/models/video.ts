@@ -4,6 +4,7 @@ import { VideoTypes } from '../constant';
 import { IVideoAttributes } from '../interface/';
 import { Like } from './like';
 import { Comment } from './comment';
+import { Video_track } from './video_track';
 export type videoInput = Optional<IVideoAttributes, 'id'>;
 
 class Video extends Model<IVideoAttributes, videoInput> implements IVideoAttributes {
@@ -92,4 +93,8 @@ Like.belongsTo(Video, { foreignKey: 'video_id' });
 
 Video.hasOne(Comment, { foreignKey: 'video_id', as: 'Comment_Video' });
 Comment.belongsTo(Video, { foreignKey: 'video_id', as: 'Comment_Video' });
+
+Video.hasOne(Video_track, { foreignKey: 'video_id', as: 'Video_track_Video' });
+Video_track.belongsTo(Video, { foreignKey: 'video_id', as: 'Video_track_Video' });
+
 export { Video };

@@ -8,7 +8,7 @@ interface ISubCommentAttributes {
   sub_comment: string;
   created_at?: Date;
   updated_at?: Date;
-  Comment?: ICommentAttributes;
+  SubComment_Comment?: ICommentAttributes;
 }
 
 interface IUpdateSubComment {

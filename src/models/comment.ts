@@ -60,7 +60,7 @@ Comment.init(
   }
 );
 
-Comment.hasOne(Sub_Comment, { foreignKey: 'comment_id', as: 'Comment' });
-Sub_Comment.belongsTo(Comment, { foreignKey: 'comment_id', as: 'Comment' });
+Comment.hasOne(Sub_Comment, { foreignKey: 'comment_id', as: 'SubComment_Comment' });
+Sub_Comment.belongsTo(Comment, { foreignKey: 'comment_id', as: 'SubComment_Comment' });
 
 export { Comment };

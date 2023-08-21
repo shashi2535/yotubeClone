@@ -93,7 +93,7 @@ const subCommentResolverController = {
         include: [
           {
             model: Comment,
-            as: 'Comment',
+            as: 'SubComment_Comment',
             attributes: ['comment_uuid'],
             include: [
               {
@@ -109,12 +109,12 @@ const subCommentResolverController = {
         status_code: HttpStatus.OK,
         message: i18next.t('STATUS.SUB_COMMENT_UPDATED_SUCCESSFULLY'),
         data: {
-          comment_uuid: subCommentUpdatedData?.Comment?.comment_uuid,
+          comment_uuid: subCommentUpdatedData?.SubComment_Comment?.comment_uuid,
           sub_comment_uuid: subCommentUpdatedData?.sub_comment_uuid,
           comment: subCommentUpdatedData?.sub_comment,
           created_at: subCommentUpdatedData?.created_at,
           updated_at: subCommentUpdatedData?.updated_at,
-          video_uuid: subCommentUpdatedData?.Comment?.Comment_Video?.video_uuid,
+          video_uuid: subCommentUpdatedData?.SubComment_Comment?.Comment_Video?.video_uuid,
         },
       };
     } catch (err: unknown) {
@@ -194,7 +194,7 @@ const subCommentQueryController = {
         include: [
           {
             model: Comment,
-            as: 'Comment',
+            as: 'SubComment_Comment',
             attributes: ['comment_uuid'],
           },
           { model: User, as: 'User_Sub_Comment', attributes: ['first_name', 'last_name'] },

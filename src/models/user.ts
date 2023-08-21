@@ -8,6 +8,7 @@ import { Like } from './like';
 import { Subscribe } from './subscribe';
 import { Sub_Comment } from './sub_comment';
 import { Video } from './video';
+import { Video_track } from './video_track';
 
 export type UserInput = Optional<IUserAttributes, 'id'>;
 
@@ -132,5 +133,8 @@ Comment.belongsTo(User, { foreignKey: 'user_id', as: 'User_Comment' });
 
 User.hasOne(Sub_Comment, { foreignKey: 'user_id', as: 'User_Sub_Comment' });
 Sub_Comment.belongsTo(User, { foreignKey: 'user_id', as: 'User_Sub_Comment' });
+
+User.hasOne(Video_track, { foreignKey: 'user_id', as: 'User_track_Video' });
+Video_track.belongsTo(User, { foreignKey: 'user_id', as: 'User_track_Video' });
 
 export { User };
