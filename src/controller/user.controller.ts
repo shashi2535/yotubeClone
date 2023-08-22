@@ -1,4 +1,4 @@
-import { HttpStatus, UserRoles } from '../constant';
+import { HttpStatus, user } from '../constant';
 import { IinputVerificationByCode, IloginInput, IresendOtpInput, IsignupInput, IverifyOtpInput } from '../interface';
 import { sign } from 'jsonwebtoken';
 import { genSalt, hash, compare } from 'bcrypt';
@@ -47,7 +47,7 @@ const userResolverController = {
         otp_expiration_time: otpExpirationTime,
         reset_token: await GenerateCodeForEmail(),
         token_expiration_time: await AddMinutesToDate(25),
-        role: UserRoles.USER,
+        role: user,
       });
       await SendOtp(phone, userCreateData.otp);
       await sendMail(email, userCreateData.reset_token);

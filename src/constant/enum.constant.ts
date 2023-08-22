@@ -3,11 +3,7 @@ export enum NodeEnv {
   PRODUCTION = 'production',
   STAGING = 'staging',
 }
-
-export enum UserRoles {
-  USER = '0',
-  ADMIN = '1',
-}
+export const user = process.env.NODE_ENV === 'development' ? '0' : 'user';
 
 export enum ApiVersions {
   V1 = 'v1',
