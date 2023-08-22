@@ -2,22 +2,17 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('video_track', {
+    await queryInterface.createTable('playlist_video', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      video_track_uuid: {
-        type: Sequelize.STRING,
-        defaultValue: null,
-      },
-      user_id: {
-        // name of foreign key using naming convention
+      playlist_id: {
         type: Sequelize.INTEGER,
         references: {
-          model: { tableName: 'user' }, // provide table name
+          model: { tableName: 'playlist' }, // provide table name
           key: 'id', // PK of the User Model
         },
         allowNull: false,
@@ -25,8 +20,7 @@ module.exports = {
         onDelete: 'cascade',
       },
       video_id: {
-        // name of foreign key using naming convention
-        type: Sequelize.DataTypes.INTEGER,
+        type: Sequelize.INTEGER,
         references: {
           model: { tableName: 'video' }, // provide table name
           key: 'id', // PK of the User Model
@@ -35,31 +29,20 @@ module.exports = {
         onUpdate: 'cascade',
         onDelete: 'cascade',
       },
-      start_time: {
-        type: Sequelize.INTEGER,
-        defaultValue: null,
-      },
-      end_time: {
-        type: Sequelize.INTEGER,
-        defaultValue: null,
-      },
-      is_watched: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false,
+      playlist_video_uuid: {
+        type: Sequelize.STRING,
       },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW,
       },
       updated_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW,
       },
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('video_track');
+    await queryInterface.dropTable('playlist_video');
   },
 };

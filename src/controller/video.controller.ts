@@ -253,71 +253,80 @@ const videoQueryController = {
     }
   },
   nextVideo: async (parent: unknown, input: INextPreviousVideo, context: Icontext) => {
-    const { video_id, type } = input.input;
-    const videoData = await Video.findOne({
-      where: { video_uuid: video_id },
-      raw: true,
-      nest: true,
-    });
-    if (!videoData) {
+    try {
+      const { video_id, type } = input.input;
+      const videoData = await Video.findOne({
+        where: { video_uuid: video_id },
+        raw: true,
+        nest: true,
+      });
+      if (!videoData) {
+        return {
+          message: i18next.t('STATUS.VIDEO_NOT_FOUND'),
+          status_code: HttpStatus.BAD_REQUEST,
+          data: null,
+        };
+      }
+      const video_position: number =
+        type === 'previous' ? Number(videoData.video_position) - 1 : Number(videoData.video_position) + 1;
+      const next_video_data = await Video.findOne({
+        where: { video_position },
+        raw: true,
+        nest: true,
+        attributes: [
+          'video_uuid',
+          'video_url',
+          'description',
+          'type',
+          'duration',
+          'title',
+          'public_id',
+          'video_view',
+          'created_at',
+          'video_position',
+        ],
+        include: [
+          {
+            model: User,
+            attributes: ['email', 'phone', 'user_uuid', 'first_name', 'last_name'],
+            required: false,
+            as: 'User_Video',
+          },
+          {
+            model: Channel,
+            required: false,
+            as: 'Channel_Video',
+            attributes: { exclude: ['UserId', 'created_at', 'updated_at', 'user_id', 'id', 'is_verified'] },
+            include: [
+              {
+                model: Avtar,
+                as: 'Avtar',
+                attributes: ['avtar_url', 'image_uuid', 'public_id'],
+              },
+            ],
+          },
+        ],
+      });
+      if (!next_video_data) {
+        return {
+          status_code: HttpStatus.BAD_REQUEST,
+          message: type === 'previous' ? 'No previous Video Found.' : 'No Next Video Found.',
+          data: null,
+        };
+      }
       return {
-        message: i18next.t('STATUS.VIDEO_NOT_FOUND'),
-        status_code: HttpStatus.BAD_REQUEST,
-        data: null,
+        status_code: HttpStatus.OK,
+        message: 'Get Next Video Data Successfully',
+        data: next_video_data,
       };
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return {
+          message: err.message,
+          status_code: HttpStatus.INTERNAL_SERVER_ERROR,
+        };
+      }
     }
-    const video_position: number =
-      type === 'previous' ? Number(videoData.video_position) - 1 : Number(videoData.video_position) + 1;
-    const next_video_data = await Video.findOne({
-      where: { video_position },
-      raw: true,
-      nest: true,
-      attributes: [
-        'video_uuid',
-        'video_url',
-        'description',
-        'type',
-        'duration',
-        'title',
-        'public_id',
-        'video_view',
-        'created_at',
-        'video_position',
-      ],
-      include: [
-        {
-          model: User,
-          attributes: ['email', 'phone', 'user_uuid', 'first_name', 'last_name'],
-          required: false,
-          as: 'User_Video',
-        },
-        {
-          model: Channel,
-          required: false,
-          as: 'Channel_Video',
-          attributes: { exclude: ['UserId', 'created_at', 'updated_at', 'user_id', 'id', 'is_verified'] },
-          include: [
-            {
-              model: Avtar,
-              as: 'Avtar',
-              attributes: ['avtar_url', 'image_uuid', 'public_id'],
-            },
-          ],
-        },
-      ],
-    });
-    if (!next_video_data) {
-      return {
-        status_code: HttpStatus.BAD_REQUEST,
-        message: type === 'previous' ? 'No previous Video Found.' : 'No Next Video Found.',
-        data: null,
-      };
-    }
-    return {
-      status_code: HttpStatus.OK,
-      message: 'Get Next Video Data Successfully',
-      data: next_video_data,
-    };
   },
 };
 

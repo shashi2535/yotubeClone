@@ -7,3 +7,4 @@ export * from './comment';
 export * from './subComment';
 export * from './playlist';
 export * from './video_track';
+export * from './playlist_video';

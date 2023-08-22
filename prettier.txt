@@ -11,9 +11,6 @@ for sequelize txt
 *for create new table ==>
 npx sequelize-cli model:generate --name User --attributes firstName:string,lastName:string,email:string
 
-* for update existing table ==>
-npx sequelize-cli model:generate --name User
-
 * for add column in existing table ==>
 npx sequelize migration:create --name Users
     queryInterface.addConstraint('table_name', {

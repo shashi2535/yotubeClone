@@ -1,7 +1,6 @@
 /* eslint-disable indent */
 /* eslint-disable no-console */
 import { FindOptions, Op } from 'sequelize';
-import { logger } from '../config';
 class SequelizeFilterSortUtil {
   private model: any;
 
