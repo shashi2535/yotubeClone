@@ -1,0 +1,45 @@
+version: '3'
+services:
+  express-typescript-boilerplate:
+    depends_on:
+      - database-layer
+    environment:
+      - NODE_ENV=development
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/usr/src/app
+      - /usr/src/app/node_modules
+    container_name: express-typescript-boilerplate
+    expose:
+      - '9000'
+    ports:
+      - '9000:9000'
+    command: npm run start:dev
+    networks:
+      - shared-network
+    restart: on-failure
+
+  database-layer:
+    image: mysql
+    container_name: database-layer
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: sequelizeWithGraphQl
+      MYSQL_PASSWORD: password
+
+    volumes:
+      - database-volume:/var/lib/mysql
+
+    ports:
+      - '3306:3306'
+    networks:
+      - shared-network
+    restart: on-failure
+
+volumes:
+  database-volume:
+
+networks:
+  shared-network:
